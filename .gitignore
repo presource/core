@@ -1,0 +1,43 @@
+# ============================================================================
+# .gitignore — @presource/core (standalone repo)
+# Build artifacts, caches and local noise never get pushed.
+# Source of truth is src/ (raw TypeScript) and types/ — nothing is compiled.
+# ============================================================================
+
+# Dependencies
+node_modules/
+
+# Build output — the package has no build step (it publishes raw TS), so these
+# are kept only as a safety net against a stray build being committed.
+dist/
+build/
+lib/
+out/
+*.tsbuildinfo
+
+# Test output (vitest run --coverage) and type-test caches
+coverage/
+.vite/
+.vite-temp/
+
+# Turborepo local caches and per-task run logs
+.turbo/
+
+# Linter cache
+.eslintcache
+
+# Package-manager logs
+yarn-debug.log*
+yarn-error.log*
+npm-debug.log*
+pnpm-debug.log*
+
+# Local env / secrets
+.env
+.env.*
+!.env.example
+keys
+
+# OS junk
+.DS_Store
+Thumbs.db

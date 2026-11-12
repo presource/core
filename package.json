@@ -9,12 +9,11 @@
         ".": {
             "types": "./src/index.ts",
             "development": "./src/index.ts",
-            "import": "./dist/presource-core.mjs"
+            "default": "./src/index.ts"
         }
     },
     "types": "src/index.ts",
     "files": [
-        "dist",
         "src"
     ],
     "publishConfig": {
@@ -22,7 +21,6 @@
         "registry": "https://registry.npmjs.org"
     },
     "scripts": {
-        "build": "vite build && tsc --emitDeclarationOnly --rootDir src --outDir dist",
         "test": "vitest run --coverage",
         "test:types": "vitest run --typecheck.only",
         "lint": "eslint src/",
