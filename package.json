@@ -8,7 +8,6 @@
     "exports": {
         ".": {
             "types": "./src/index.ts",
-            "development": "./src/index.ts",
             "default": "./src/index.ts"
         }
     },
@@ -30,6 +29,6 @@
     "author": "NQQT",
     "license": "ISC",
     "devDependencies": {
-        "@vitest/coverage-v8": "^4.1.9"
+        "@vitest/coverage-v8": "^4.1.12"
     }
 }

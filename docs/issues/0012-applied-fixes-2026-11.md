@@ -161,10 +161,15 @@ in `src/script/async.test.ts`, and the range/`toContain` comparisons in
 
 ## Follow-ups on these six
 
-1. Commit the changes and re-run `npm run build` so `dist/presource-core.mjs`
-   ships the fixes — the `import` export condition in `package.json` points at
-   `dist/`, so a consumer resolving that condition still sees the pre-fix
-   behavior until the build is published.
+1. Commit the changes — this package now publishes TypeScript SOURCE directly
+   (`main`, `module`, `types` and every `exports` condition point at
+   `src/index.ts`, and `files: ["src"]`), so the fixes ship with the next
+   `yarn release` and there is nothing to rebuild: the package has no `build`
+   script and no `dist/`, and no export condition points at a built artifact.
+   (The original instruction here — re-run `npm run build` so the bundle and the
+   declaration files catch up — belonged to the pre-source-publishing manifest
+   and is gone with it; AGENTS.md "Runtime / runner policy" (c) bans that
+   artifact entirely.)
 2. Decide whether the two other packages with local `EMPTY_STRING` copies
    (`packages/rightless/icons`, `packages/userfiction/visual`) should drop the
    workaround now that the export exists.

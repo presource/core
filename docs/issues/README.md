@@ -5,6 +5,15 @@ Findings against `packages/presource/core`, from the full review pass of
 probed at runtime (plain `node` against `dist/presource-core.mjs`), and the
 test suite was rewritten around the probed values.
 
+> **Artifact note (2026-11-12), read before repeating any probe:** the parenthetical
+> above is the dated record of how that pass worked and is kept as written. It no
+> longer describes this package: `packages/presource/core` now publishes TypeScript
+> SOURCE (`main`, `module`, `types` and every `exports` condition → `src/index.ts`,
+> `files: ["src"]`) and has no `build` script, so there is no `dist/` to probe and
+> raw `node` is not a runner for repo code. Re-probing today means
+> `yarn vite-node` against `src/index.ts` — AGENTS.md "Runtime / runner policy" (a)
+> and (c).
+
 Each file is one issue. Unlike the sibling log at
 `packages/underload/harness/docs/issues/` (which records capability gaps),
 **most entries here are correctness findings**: the implementation contradicts
