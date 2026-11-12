@@ -1,0 +1,9 @@
+yarn run v1.22.22
+$ vitest run --coverage
+[33mLoaded [7m[33m vitest@4.1.12 [33m[27m and [7m[33m @vitest/coverage-v8@4.1.9 [33m[27m.
+Running mixed versions is not supported and may lead into bugs
+Update your dependencies and make sure the versions match.[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.12 [39m[90mD:/Projects/typescript/noobscript/packages/presource/core[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+

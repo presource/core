@@ -1,0 +1,37 @@
+{
+    "name": "@presource/core",
+    "version": "1.0.2",
+    "description": "Core Javascript Utility",
+    "type": "module",
+    "main": "src/index.ts",
+    "module": "src/index.ts",
+    "exports": {
+        ".": {
+            "types": "./src/index.ts",
+            "development": "./src/index.ts",
+            "import": "./dist/presource-core.mjs"
+        }
+    },
+    "types": "src/index.ts",
+    "files": [
+        "dist",
+        "src"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org"
+    },
+    "scripts": {
+        "build": "vite build && tsc --emitDeclarationOnly --rootDir src --outDir dist",
+        "test": "vitest run --coverage",
+        "test:types": "vitest run --typecheck.only",
+        "lint": "eslint src/",
+        "typecheck": "tsc --noEmit",
+        "release": "vite-node ../../../scripts/publish-safe.ts"
+    },
+    "author": "NQQT",
+    "license": "ISC",
+    "devDependencies": {
+        "@vitest/coverage-v8": "^4.1.9"
+    }
+}

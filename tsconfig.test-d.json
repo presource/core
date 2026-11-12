@@ -1,0 +1,24 @@
+{
+    // Dedicated tsconfig for the `*.test-d.ts` type-level suite (vitest `typecheck.tsconfig`).
+    // Why a separate file instead of reusing ./tsconfig.json:
+    // - the type tests live in ./types (outside src) on purpose: src/** is the package's
+    //   coverage scope and its declaration-emit root, so a non-source file there would show
+    //   up as a 0% coverage entry and `tsc --emitDeclarationOnly --rootDir src` would emit a
+    //   stray .d.ts into dist;
+    // - files outside src are not in ./tsconfig.json's include, so tsc would never check them;
+    // - this file adds them to the program WITHOUT touching ./tsconfig.json, so the package
+    //   build (`vite build && tsc --emitDeclarationOnly --rootDir src --outDir dist`) is
+    //   unchanged: no TS6059 "not under rootDir", no test-d .d.ts pollution in dist.
+    // `declaration: false` + `noEmit` keep this a check-only program (the base tsconfig sets
+    // `declaration: true` for the build). `exclude` is repeated explicitly (rather than
+    // relying on the transitive root exclude) so runtime `*.test.ts` files never enter the
+    // type-test program.
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "declaration": false,
+        "rootDir": "."
+    },
+    "include": ["src/**/*", "types/**/*.test-d.ts"],
+    "exclude": ["node_modules", "dist", "coverage", "**/*.test.ts", "**/lib/*"]
+}

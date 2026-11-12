@@ -1,0 +1,25 @@
+yarn run v1.22.22
+$ eslint src/
+
+/run/media/erosire/Project/Projects/typescript/noobscript/packages/presource/core/src/data/list.ts
+  26:6  warning  'List' is defined but never used     @typescript-eslint/no-unused-vars
+  46:6  warning  'Handler' is defined but never used  @typescript-eslint/no-unused-vars
+
+/run/media/erosire/Project/Projects/typescript/noobscript/packages/presource/core/src/function/state.ts
+  30:31  warning  'setting' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  93:28  warning  'params' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+
+/run/media/erosire/Project/Projects/typescript/noobscript/packages/presource/core/src/object/populate.ts
+   8:10  warning  'objectEach' is defined but never used                                              @typescript-eslint/no-unused-vars
+  20:48  warning  'referencedObject' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  20:66  warning  'populationData' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+
+/run/media/erosire/Project/Projects/typescript/noobscript/packages/presource/core/src/object/resolve.ts
+  22:38  warning  'value' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/run/media/erosire/Project/Projects/typescript/noobscript/packages/presource/core/src/script/async.ts
+  65:42  warning  'configs' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 9 problems (0 errors, 9 warnings)
+
+Done in 1.30s.

@@ -1,0 +1,4 @@
+yarn run v1.22.22
+$ vite-node ../../../scripts/publish-safe.ts
+[publish-safe] @presource/core@1.0.2 already published — skipping.
+Done in 13.17s.
