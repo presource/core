@@ -1,4 +1,4 @@
-import { arrayWrapper } from '..';
+import { arrayWrapper } from '@presource/core';
 
 /**
  * `remove` contract (src/array/wrapper/methods/remove.ts).

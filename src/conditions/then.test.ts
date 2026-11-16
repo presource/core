@@ -1,4 +1,4 @@
-import { ifThen } from './then';
+import { ifThen } from '@presource/core';
 
 /**
  * Contract source: src/conditions/then.ts (lines 30-41) —

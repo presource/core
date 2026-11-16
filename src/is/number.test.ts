@@ -1,4 +1,4 @@
-import { isNumber } from './number';
+import { isNumber } from '@presource/core';
 
 describe('isNumber', () => {
     test('should return true for numbers', () => {

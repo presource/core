@@ -1,4 +1,4 @@
-import { arrayWrapper } from '..';
+import { arrayWrapper } from '@presource/core';
 
 /**
  * `select` contract (src/array/wrapper/methods/select.ts).

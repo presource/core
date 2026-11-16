@@ -1,4 +1,4 @@
-import { stringCapitalize } from './capitalize';
+import { stringCapitalize } from '@presource/core';
 
 /**
  * Contract source: src/string/capitalize.ts (lines 19-29).

@@ -1,4 +1,4 @@
-import { stringIncludes } from './includes';
+import { stringIncludes } from '@presource/core';
 
 /**
  * Contract source: src/string/includes.ts (lines 54-68).

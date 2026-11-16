@@ -1,4 +1,4 @@
-import { arrayWrapper } from '..';
+import { arrayWrapper } from '@presource/core';
 
 /**
  * `each` contract (src/array/wrapper/methods/each.ts).

@@ -1,4 +1,4 @@
-import { booleanPartialFalse, booleanPartialTrue } from './partial';
+import { booleanPartialFalse, booleanPartialTrue } from '@presource/core';
 
 /**
  * Contract source: src/boolean/partial.ts (lines 23-36 / 46-60) driving src/boolean/cases.ts.

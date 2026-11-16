@@ -1,4 +1,4 @@
-import { typeName } from './name';
+import { typeName } from '@presource/core';
 
 describe('typeName', () => {
     test('should return lowercase constructor name for string', () => {

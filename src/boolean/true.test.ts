@@ -1,4 +1,4 @@
-import { booleanTrue } from './true';
+import { booleanTrue } from '@presource/core';
 
 /**
  * Contract source: src/boolean/true.ts (lines 19-25) driving src/boolean/cases.ts.

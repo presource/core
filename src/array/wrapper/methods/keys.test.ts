@@ -1,4 +1,4 @@
-import { arrayWrapper } from '..';
+import { arrayWrapper } from '@presource/core';
 
 /**
  * `keys` contract (src/array/wrapper/methods/keys.ts).

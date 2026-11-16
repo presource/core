@@ -1,4 +1,4 @@
-import { stringSwitch, stringSwitchAsync } from './switch';
+import { stringSwitch, stringSwitchAsync } from '@presource/core';
 
 /**
  * Contract source: src/string/switch.ts (lines 52-99).

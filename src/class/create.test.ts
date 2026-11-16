@@ -1,5 +1,5 @@
-import { classConstructor } from './constructor';
-import { classCreate } from './create';
+import { classConstructor } from '@presource/core';
+import { classCreate } from '@presource/core';
 
 /**
  * Contract source: src/class/create.ts (lines 7-24).

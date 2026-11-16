@@ -1,4 +1,4 @@
-import { stringReverse } from './reverse';
+import { stringReverse } from '@presource/core';
 
 /**
  * Contract source: src/string/reverse.ts (line 14) - `value.split('').reverse().join('')`.

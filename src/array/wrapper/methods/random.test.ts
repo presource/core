@@ -1,4 +1,4 @@
-import { arrayWrapper } from '..';
+import { arrayWrapper } from '@presource/core';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
 /**

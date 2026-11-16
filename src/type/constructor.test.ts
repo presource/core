@@ -1,4 +1,4 @@
-import { typeConstructor } from './constructor';
+import { typeConstructor } from '@presource/core';
 
 describe('typeConstructor', () => {
     test('should return constructor for string', () => {

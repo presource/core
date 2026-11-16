@@ -1,4 +1,4 @@
-import { classConstructor } from './constructor';
+import { classConstructor } from '@presource/core';
 
 /**
  * Contract source: src/class/constructor.ts (lines 4-6) - `Object.getPrototypeOf(instance).constructor`.

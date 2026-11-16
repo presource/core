@@ -1,4 +1,4 @@
-import { objectResolve } from './resolve';
+import { objectResolve } from '@presource/core';
 
 describe('objectResolve', () => {
     test('should be defined', () => {

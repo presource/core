@@ -1,4 +1,4 @@
-import * as core from './index';
+import * as core from '@presource/core';
 
 // Direct deep-module imports used to prove the root barrel re-exports the SAME
 // implementations rather than copies/shadows (identity assertions below).

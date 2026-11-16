@@ -1,4 +1,4 @@
-import { jsonTable } from './table';
+import { jsonTable } from '@presource/core';
 
 type TestRecord = {
     id: string;

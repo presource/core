@@ -1,5 +1,5 @@
-import { isValid } from './valid';
-import { isInvalid } from './invalid';
+import { isValid } from '@presource/core';
+import { isInvalid } from '@presource/core';
 
 describe('isValid', () => {
     test('should return true for valid values', () => {

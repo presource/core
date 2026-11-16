@@ -1,4 +1,4 @@
-import { arrayWrapper } from './index';
+import { arrayWrapper } from '@presource/core';
 
 /**
  * `arrayWrapper` factory contract (src/array/wrapper/index.ts).

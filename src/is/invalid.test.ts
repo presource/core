@@ -1,4 +1,4 @@
-import { isInvalid } from './invalid';
+import { isInvalid } from '@presource/core';
 
 describe('isInvalid', () => {
     test('should return true for null', () => {

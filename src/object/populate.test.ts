@@ -1,4 +1,4 @@
-import { objectPopulate } from './populate';
+import { objectPopulate } from '@presource/core';
 
 describe('objectPopulate', () => {
     test('should be defined', () => {

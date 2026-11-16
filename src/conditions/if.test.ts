@@ -1,4 +1,4 @@
-import { ifFalse, ifTrue } from './if';
+import { ifFalse, ifTrue } from '@presource/core';
 
 /**
  * Contract source: src/conditions/if.ts (lines 20-40).

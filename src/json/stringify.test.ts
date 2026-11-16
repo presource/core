@@ -1,4 +1,4 @@
-import { jsonStringify } from './stringify';
+import { jsonStringify } from '@presource/core';
 
 /**
  * Contract source: `src/json/stringify.ts`.

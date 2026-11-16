@@ -1,4 +1,4 @@
-import { booleanCases } from './cases';
+import { booleanCases } from '@presource/core';
 
 /**
  * Contract source: src/boolean/cases.ts (lines 41-69).

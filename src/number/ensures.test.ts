@@ -1,4 +1,4 @@
-import { numberEnsures } from './ensures';
+import { numberEnsures } from '@presource/core';
 
 /**
  * Contract source: `src/number/ensures.ts`.

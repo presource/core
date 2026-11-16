@@ -1,4 +1,4 @@
-import { objectEach, objectEachAsync } from './each';
+import { objectEach, objectEachAsync } from '@presource/core';
 import { scriptPause } from '@presource/core';
 
 describe('Object Each', () => {

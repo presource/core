@@ -5,8 +5,8 @@ import {
     NUMBERS_STRING,
     SPACE_STRING,
     UNDEFINED_STRING,
-} from './strings';
-import { toString } from '../to';
+} from '@presource/core';
+import { toString } from '@presource/core';
 
 /**
  * Literal string constants (src/constants/strings.ts).
