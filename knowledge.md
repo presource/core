@@ -5,7 +5,7 @@ Core JavaScript/TypeScript utility library — the foundational layer for the en
 > **Last verified:** 2026-06-19
 > **Package name:** `@presource/core`
 > **Dependencies:** None (zero runtime deps)
-> **Workspace consumers:** `@presource/utility`, `@presource/node`, `@presource/structure`, `@library/presource`, `@library/userfiction`, `@library/cloud`, `@library/test`, `@reloaded/headless`, `@reloaded/material`, `@library/workflow`
+> **Workspace consumers:** `@presource/utility`, `@presource/node`, `@presource/structure`, `@library/presource`, `@library/userfiction`, `@library/cloud`, `@presource/test`, `@reloaded/headless`, `@reloaded/material`, `@library/workflow`
 
 ---
 
