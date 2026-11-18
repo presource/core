@@ -1,4 +1,23 @@
 {
-    "extends": "../../../tsconfig.json",
-    "include": ["src/**/*"]
+    // Self-contained: the standalone `presource/core` repository has no parent
+    // tsconfig to extend, and Vite 8's oxc transform hard-fails when an
+    // `extends` target is missing (TSCONFIG_ERROR). These options mirror the
+    // monorepo root tsconfig that this package used to inherit.
+    "compilerOptions": {
+        "module": "ESNext",
+        "target": "ESNext",
+        "moduleResolution": "bundler",
+        "jsx": "react",
+        "skipLibCheck": true,
+        "allowJs": true,
+        "experimentalDecorators": true,
+        "declaration": true,
+        "esModuleInterop": true,
+        "strict": true,
+        "outDir": "./lib",
+        "lib": ["decorators", "dom", "es5", "scripthost", "es2015.collection"],
+        "types": ["node", "vitest/globals"]
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "Temp", "**/Temp", "**/*.test.ts", "**/dist/*", "**/lib/*"]
 }

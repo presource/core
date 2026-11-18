@@ -1,6 +1,6 @@
 {
     "name": "@presource/core",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Core Javascript Utility",
     "type": "module",
     "main": "src/index.ts",
@@ -29,6 +29,7 @@
     "author": "NQQT",
     "license": "ISC",
     "devDependencies": {
-        "@vitest/coverage-v8": "^4.1.12"
+        "@vitest/coverage-v8": "^4.1.12",
+        "jsdom": "^29.0.2"
     }
 }
