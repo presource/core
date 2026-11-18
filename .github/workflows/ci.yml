@@ -1,0 +1,28 @@
+# Runs the package's test suite on every push.
+#
+# No lockfile is committed, so `npm install` rather than `npm ci`.
+# The package publishes its TypeScript sources (main/types/exports ->
+# src/index.ts): there is no build step, only the vitest run.
+
+name: CI
+
+on:
+    push:
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Setup Node
+              uses: actions/setup-node@v5
+              with:
+                  node-version: 24
+
+            - name: Install dependencies
+              run: npm install
+
+            - name: Test
+              run: npm test
