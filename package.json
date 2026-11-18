@@ -30,6 +30,6 @@
     "license": "ISC",
     "devDependencies": {
         "@vitest/coverage-v8": "^4.1.12",
-        "jsdom": "^29.0.2"
+        "happy-dom": "^21.0.4"
     }
 }
