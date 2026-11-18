@@ -2,12 +2,13 @@ import { classConstructor } from '@presource/core';
 import { classCreate } from '@presource/core';
 
 /**
- * Contract source: src/class/create.ts (lines 7-24).
+ * Contract source: `classCreate` in src/class/create.ts.
  *
  * Behaviour nailed down here:
- * - The shape is iterated with `objectEach` (object/each.ts:42 → `Object.keys`), so POSITIONAL
+ * - The shape is iterated with `objectEach` (its `getParams` helper enumerates with
+ *   `Object.keys`), so POSITIONAL
  *   arguments are bound by key insertion order. Integer-like keys are reordered ascending.
- * - `val === undefined ? value : val` (create.ts:17) keeps the default only for `undefined` -
+ * - `val === undefined ? value : val` (create.ts:39) keeps the default only for `undefined` -
  *   `0`, `''`, `false` and `null` arguments all win over the default.
  * - Every shape entry becomes an OWN property, including functions, and extra arguments beyond
  *   the shape length are simply never read.
@@ -36,7 +37,7 @@ describe('Class Creation', () => {
         expect(protagonist.name).toBe('james');
         expect(protagonist.gender).toBe('male');
 
-        // Creating a Herione with updated fields
+        // Creating a heroine with updated fields
         const herione = new Person('lily', 'female');
         expect(herione.name).toBe('lily');
         expect(herione.gender).toBe('female');
@@ -47,7 +48,7 @@ describe('Class Creation', () => {
         const Building = classCreate({
             wood: 5,
             metal: 9,
-            // Can totally use inbuild functions
+            // Methods are ordinary shape values: they become own properties of every instance
             total(): number {
                 // Return the total
                 return this.wood + this.metal;
@@ -83,11 +84,11 @@ describe('Class Creation', () => {
 
         const house = new Building();
 
-        // create.ts:17 assigns ALL keys, so 'total' is an own enumerable property
+        // create.ts:39 assigns ALL keys, so 'total' is an own enumerable property
         expect(Object.keys(house)).toStrictEqual(['wood', 'total']);
         expect(Object.prototype.hasOwnProperty.call(house, 'total')).toBe(true);
         expect(Building.prototype.hasOwnProperty('total')).toBe(false);
-        // An explicit undefined argument keeps the default method (create.ts:17 strict check)
+        // An explicit undefined argument keeps the default method (create.ts:39 strict check)
         expect(new Building(1, undefined).total()).toBe(1);
     });
 

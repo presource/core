@@ -32,7 +32,7 @@ describe('Object Each', () => {
     });
 
     // ----------------------------------------------------------------------------------------
-    // Edge cases. Contract source: src/object/each.ts:41-77.
+    // Edge cases. Contract source: `objectEach` in src/object/each.ts.
     // `getParams` builds ONE mutable argument object reused for every iteration; the loop
     // breaks on `result !== undefined`, so any defined return (even falsy) short-circuits.
     // ----------------------------------------------------------------------------------------
@@ -120,7 +120,8 @@ describe('Object Each', () => {
     });
 
     test('short-circuits on the first defined result even when that result is falsy', () => {
-        // each.ts:73 breaks on `!== undefined`, so 0 / '' / false / NaN / null all stop the loop
+        // `objectEach` breaks on `params.result !== undefined`, so 0 / '' / false /
+        // NaN / null all stop the loop
         const breakers = { zero: 0, emptyString: '', falseValue: false, nan: NaN, nullValue: null };
         const outcomes: Record<string, { calls: number; returned: unknown }> = {};
 
@@ -277,7 +278,7 @@ describe('Object each Async', () => {
     });
 
     // ----------------------------------------------------------------------------------------
-    // Edge cases. Contract source: src/object/each.ts:89-99 (same shared params object as the
+    // Edge cases. Contract source: `objectEachAsync` in src/object/each.ts (same shared params object as the
     // sync loop, but every callback result is awaited before the `!== undefined` break check).
     // ----------------------------------------------------------------------------------------
 
@@ -389,8 +390,8 @@ describe('Object each Async', () => {
     });
 
     test('deleting a not-yet-visited key still fires the callback with an undefined value', () => {
-        // G17: `getParams` snapshots `Object.keys(object)` before the loop starts (each.ts:42)
-        // and the loop re-reads `params.object[params.key]` on every step (each.ts:71). A key
+        // `getParams` snapshots `Object.keys(object)` before the loop starts
+        // and the loop re-reads `params.object[params.key]` on every step. A key
         // deleted before its turn is therefore still visited - with `value: undefined` - and the
         // index simply advances, so the visit sequence is exactly the originally snapshotted keys.
         const source: any = { a: 1, b: 2, c: 3 };
@@ -413,8 +414,8 @@ describe('Object each Async', () => {
     });
 
     test('keys created mid-iteration are never visited because the key list is a snapshot', () => {
-        // G17 companion: the same snapshot that keeps deleted keys visible hides new ones, so
-        // `length`/`array` never grow during the walk.
+        // Companion to the deleted-key case above: the same snapshot that keeps deleted keys
+        // visible hides new ones, so `length`/`array` never grow during the walk.
         const source: any = { a: 1 };
         const keys: unknown[] = [];
 

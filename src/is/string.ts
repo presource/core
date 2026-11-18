@@ -1,7 +1,9 @@
 /**
- * String type guards.
+ * String type guard.
  *
- * Provides predicates for detecting plain strings and empty strings.
+ * Provides the `isString` predicate for detecting string primitives and
+ * `String` wrapper objects. Emptiness checks live in ./empty.ts (`isEmpty`),
+ * not here.
  */
 import { typeConstructor } from '../type';
 

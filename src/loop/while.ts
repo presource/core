@@ -14,8 +14,10 @@
  *
  * @property condition - The predicate function that decides whether to continue.
  * @property callback - The function executed each iteration.
- * @property count - Zero-based iteration counter.
- * @property result - The return value from the previous callback invocation.
+ * @property count - Zero-based iteration counter; increments only on passes that do NOT break.
+ * @property result - Write-only in practice: only a non-breaking pass stores, and it can
+ *   only store the `undefined` that let the loop continue, so a callback never sees a
+ *   defined `result` (docs/issues/0004).
  */
 type Argument = {
   condition: Condition;
@@ -45,13 +47,16 @@ type Callback = (args: Argument) => any;
 /**
  * Execute *callback* repeatedly while *condition* returns `true`.
  *
- * On each pass the callback's return value is stored in `params.result`
- * and `params.count` is incremented.  If the callback returns a non-
- * `undefined` value the loop breaks early.
+ * The condition gates the very first pass, so a false condition runs the body ZERO
+ * times. On a non-breaking pass `params.count` is incremented and `params.result` is
+ * stored. A breaking pass (any non-`undefined` return, including falsy `0` / `''` /
+ * `false`) exits BEFORE that store, so its value is never recorded.
  *
- * @param condition - Predicate that returns `true` to keep looping.
+ * @param condition - Predicate that returns `true` to keep looping. Checked once per
+ *                    pass plus one final failing check when the loop ends normally.
  * @param callback - Function to execute each iteration.
- * @returns The final value of `params.result` after the loop ends.
+ * @returns `params.result` — effectively ALWAYS `undefined`: a stored value is always
+ *          `undefined`, and the break path stores nothing (docs/issues/0004).
  */
 export const loopWhile = (condition: Condition, callback: Callback) => {
   const params: Argument = {
@@ -63,9 +68,11 @@ export const loopWhile = (condition: Condition, callback: Callback) => {
 
   while (condition(params)) {
     const result = callback(params);
-    // Non-undefined return is a success signal; exit immediately
+    // Non-undefined return is a success signal; exit immediately — WITHOUT storing the
+    // value below, which is why the break value can never be returned.
     if (result !== undefined) break;
 
+    // Only a continuing pass reaches the bookkeeping, so `result` is always `undefined`.
     params.count++;
     params.result = result;
   }

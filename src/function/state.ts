@@ -77,9 +77,16 @@ export const functionState = (setting: Setting = {}): Wrapper => {
         // Creating a Callback Function — handles both function and plain-value inputs
         const callback = typeSwitch(input, {
             // If value is a function — wrap it to capture dependency reads during execution
-            // TODO: pending - Commented-out async state implementation. Decide: implement or remove
+            // TODO: pending - Async state slots are unimplemented. An async callback is
+            // wrapped like any other function, so its value is a fresh Promise on every run
+            // and `propagate` (reference-equality gate) sees a change every time. The block
+            // below is that unimplemented design; it also predates the current `{ key }`
+            // payload of `objectEach` (it destructures `{ k }`), so it cannot just be
+            // uncommented. The matching async example in src/function/state.test.ts is
+            // commented out for the same reason (docs/issues/0011, P2).
             function: ({ value }: any) => {
-                // // If Funtion is Async. Return async function
+                // // If the Function is Async, return an async wrapper that awaits the
+                // // result between the trigger push and the dependent-chain collection.
                 // if (isFunctionAsync(value)) {
                 //   return async (...params: any[]) => {
                 //     triggers.push([]);
@@ -116,30 +123,36 @@ export const functionState = (setting: Setting = {}): Wrapper => {
                 values[index] = value;
                 // Return a callback function
                 return (value?: any) => {
-                    // If value is undefined, return the data value
+                    // If value is undefined, return the data value — `undefined` is a read
                     if (value === undefined) return values[index];
-                    // Simply return the value
+                    // A defined argument is a write: hand it back so the proxy's `call`
+                    // handler feeds it to `propagate`, which stores it and re-runs dependents.
                     return value;
                 };
             }
         });
 
-        // First time trigger, stored the first values
+        // First time trigger, stored the first values — for a function slot this run also
+        // registers the slot's dependencies; reading the slot again re-runs the function.
         values[index] = callback();
 
         // The State Wrapper Function — a proxy that intercepts calls to track triggers and propagate changes
         state[index] = functionProxy(({ method, params }) => {
             // Return whatever data is triggered
             return stringSwitch(method, {
-                // If Call method is envoked
+                // Only `call` has a case; `get`/`set` are handled by `functionProxy` itself,
+                // and its get trap leaks the raw target for unknown properties (pinned in
+                // src/function/state.test.ts, 'exposes the raw target function for property access on a slot').
                 call: () => {
                     // Triggered — record that this state was accessed
                     triggered(index);
-                    // Triggering Callback
+                    // Run the slot callback with the call arguments (function slots ignore
+                    // them and re-evaluate on every read)
                     const response = callback(...params);
                     // Propagate up the chain — notify dependents if value changed
                     propagate(index, response);
-                    // Returning the value in the index
+                    // Return the stored value, not the raw response: `propagate` only writes
+                    // when the value actually changed, so this is the accepted state value.
                     return values[index];
                 }
             });

@@ -5,7 +5,7 @@ import { toString } from '@presource/core';
  * src/to/index.ts barrel contract.
  *
  * Expected runtime surface, hand-derived from the single `export *` line in
- * src/to/index.ts (line 6): toString (src/to/string.ts:18).
+ * src/to/index.ts (line 6): toString (src/to/string.ts:20).
  *
  * NOTE the original version of this file asserted `typeSwitch`, which belongs to
  * src/type (not this barrel); the correct subject is `toString`. `toString` shadows
@@ -46,7 +46,7 @@ describe('to barrel (src/to/index.ts)', () => {
     });
 
     test('multiple arguments currently return the mapped array (documented source bug)', () => {
-        // src/to/string.ts:38 `// TODO: pending - BUG: Returns string[] for multiple args
+        // src/to/string.ts:54 `// TODO: pending - BUG: Returns string[] for multiple args
         // but signature declares string` — pinned as-is so a future fix is a deliberate,
         // visible change rather than a silent behaviour shift.
         expect(toModule.toString('a', 'b') as unknown).toStrictEqual(['a', 'b']);

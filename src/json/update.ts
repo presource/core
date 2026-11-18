@@ -19,9 +19,10 @@ import { isObject } from '../is';
  *   - Objects: merge property-by-property by key.
  *   - Otherwise: the secondary value replaces the primary.
  * - If types differ: the secondary value is returned as-is.
- * - If the values are `===`-equal the primary is returned. HEAD returned the secondary in
- *   that case, which is the same value apart from the `0`/`-0` pair (see the identity
- *   guard below) — a genuine delta, pinned in src/json/update.test.ts.
+ * - If the values are `===`-equal the primary is returned. The previous
+ *   implementation returned the secondary in that case, which is the same
+ *   value apart from the `0`/`-0` pair (see the identity guard below) — a
+ *   genuine delta, pinned in src/json/update.test.ts.
  *
  * ## Dispatch model (perf)
  *
@@ -51,12 +52,16 @@ import { isObject } from '../is';
  *
  * @param primaryObject - The base value to merge into.
  * @param secondaryObject - The value to merge on top of the primary.
- * @returns The merged result (a new or updated reference).
+ * @returns The merged value. When the two sides merge, this is the **mutated** `primaryObject`
+ *          (not a copy); otherwise it is whichever side wins, so the result can share leaves
+ *          with both inputs — see the note on `jsonUpdate`.
  */
-// TODO: pending - BUG: let result = primaryObject mutates original. Should clone first
+// TODO: pending - BUG: jsonUpdate merges in place instead of cloning first: the primary
+// object/array is mutated and handed back, and keys/elements the secondary introduces are
+// assigned by reference, so the result can share leaves with both inputs.
 export const jsonUpdate = (primaryObject: any, secondaryObject: any) => {
   // Fast path for identical values: the same reference, or a `===`-equal primitive pair
-  // such as `0`/`-0`. HEAD had no guard here — its `else` branch ALWAYS returned the
+  // such as `0`/`-0`. The previous implementation had no guard here — its `else` branch ALWAYS returned the
   // secondary — so a shared reference stays indistinguishable (secondary === primary),
   // while the `===`-equal-but-distinct pair is a genuine delta: `jsonUpdate(0, -0)` used
   // to return `-0` and now returns `0`, and `jsonUpdate(-0, 0)` used to return `0` and now

@@ -63,8 +63,9 @@ describe('Filter function of array Wrapper', () => {
     });
 
     test('index based predicate keeps two-digit indexes correctly', () => {
-        // Depends on the keys.ts:107 numeric sort: the collected indexes 0,2,4,6,8,10
-        // must be spliced in ascending order for the offset math to stay correct
+        // Depends on the ascending order keys.ts produces for free: the collected indexes
+        // 0,2,4,6,8,10 must reach `remove` in ascending order for the single-pass compaction
+        // to drop exactly those slots
         const odds = [...twelve];
         $array(odds).retain(({ index }) => index % 2);
         expect(odds).toStrictEqual([1, 3, 5, 7, 9, 11]);

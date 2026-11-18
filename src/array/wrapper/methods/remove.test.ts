@@ -3,10 +3,12 @@ import { arrayWrapper } from '@presource/core';
 /**
  * `remove` contract (src/array/wrapper/methods/remove.ts).
  *
- * `remove` splices the resolved keys out of the WRAPPED ARRAY ITSELF (remove.ts:33-37)
- * and returns the wrapper for chaining. Because keys.ts:107 now sorts numerically,
- * the ascending splice loop with `pointer = value - index` is correct for any request
- * order — including indexes >= 10, which the old string sort corrupted.
+ * `removeFunction` compacts the WRAPPED ARRAY ITSELF in a single forward pass
+ * and returns the wrapper for chaining. Slots to drop are marked in a Set, so the result
+ * no longer depends on the order or uniqueness of the resolved keys at all. The previous
+ * ascending splice loop with `pointer = value - index` offsets was only order-correct
+ * once keys.ts produced numeric ascending keys — under its old string sort, indexes >= 10
+ * spliced the wrong slots.
  */
 describe('Remove functionality of array Wrapper', () => {
     const $array = arrayWrapper();
@@ -29,8 +31,8 @@ describe('Remove functionality of array Wrapper', () => {
     });
 
     test('descending and ascending index requests remove the same elements', () => {
-        // REGRESSION (keys.ts:104-107): with the lexicographic sort, keys([10, 0]) came
-        // back as [0, 10] by luck but keys([2, 10]) as [10, 2], so the pointer offset
+        // REGRESSION (the old lexicographic sort in keys.ts): with that sort, keys([10, 0])
+        // came back as [0, 10] by luck but keys([2, 10]) as [10, 2], so the pointer offset
         // spliced the wrong slots and left index 1 missing instead of index 2.
         const descending = [...twelve];
         const ascending = [...twelve];
@@ -139,7 +141,7 @@ describe('Remove functionality of array Wrapper', () => {
 
     test('shifted holes stay holes and never become undefined entries (H3)', () => {
         // Reference behavior was captured against the pre-fix `splice` loop in
-        // Temp/coding-wrapper/sparse-probe.ts: `Array#splice` moved a hole as a
+        // `removeFunction`: `Array#splice` moved a hole as a
         // hole, so the compaction must not materialise it into the array.
         const shifted = [1, , 3];
         $array(shifted).remove(0);

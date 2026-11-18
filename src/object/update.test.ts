@@ -120,7 +120,7 @@ describe('Object Update', () => {
     });
 
     test('Own symbol keys are copied, inherited keys stay excluded', () => {
-        // M17: objectUpdate is now `Object.assign`, which also copies own enumerable symbol keys
+        // objectUpdate is now `Object.assign`, which also copies own enumerable symbol keys
         // (the previous `Object.keys` walk skipped them). Inherited keys - symbol or string - are
         // still never copied, exactly as before.
         const symbol = Symbol('s');
@@ -147,7 +147,7 @@ describe('Object Update', () => {
     });
 
     test('A null update source throws the same TypeError as undefined', () => {
-        // M17: `Object.assign` silently ignores a null/undefined source, so update.ts keeps an
+        // `Object.assign` silently ignores a null/undefined source, so update.ts keeps an
         // explicit `Object.keys(update)` guard to preserve the original failure mode.
         const target: any = { a: 1 };
 
@@ -157,7 +157,7 @@ describe('Object Update', () => {
     });
 
     test('A primitive target no longer throws, and the original reference is returned', () => {
-        // M17 difference: the previous per-key assignment hit a strict-mode TypeError on a
+        // Behaviour difference: the previous per-key assignment hit a strict-mode TypeError on a
         // primitive receiver. `Object.assign` boxes the target internally, so the write is
         // discarded and the caller still receives the untouched primitive reference.
         const target: any = 'abc';

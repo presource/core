@@ -10,12 +10,12 @@ import { stringSwitch } from '../string';
  *     return sentinel strings, and all other types use `.toString()`.
  *     Scalars (string/number/boolean) short-circuit that dispatch; they
  *     are byte-identical to `String(value)` and cost a fraction of it.
- * - With multiple arguments each value is converted individually
- *   and the results are returned as a joined array (via stringSwitch
- *   default branch).
+ * - With multiple arguments each value is converted individually and the results come
+ *   back as an ARRAY (never joined), even though the declared return type stays `string` -
+ *   the mismatch is pinned by the TODO on the `stringSwitch` default branch below.
  *
  * @param input - Zero or more values to convert.
- * @returns The string representation of the input value(s).
+ * @returns A string for zero or one argument, or an array of strings for two or more (see above).
  */
 export const toString = (...input: any[]): string => {
     // Fast path: a single scalar argument. `String()` produces exactly what the

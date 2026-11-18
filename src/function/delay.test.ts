@@ -4,13 +4,13 @@ import { functionDelay } from '@presource/core';
  * Contract under test: `functionDelay(callback, delay = 0)` (src/function/delay.ts).
  *
  * It is a thin `setTimeout` wrapper: the callback receives exactly one argument,
- * `{ delay }`, whose `delay(time)` helper schedules ANOTHER independent timer
- * (there is no cancel API — see the TODO on delay.ts:16). The callback's return
- * value is discarded, and the value returned by `functionDelay` itself is the raw
- * timer handle.
+ * `{ delay }`, whose `delay(time)` helper schedules ANOTHER independent timer, and there
+ * is no cancel API for that self-rescheduling chain (see the `functionDelay` TODO).
+ * The callback's return value is discarded; `functionDelay` itself hands back the raw
+ * `setTimeout` handle, an identity no test pins (the test below only rules the result out).
  */
 describe('Delaying Function', () => {
-    // Using Jest fake timer
+    // Vitest fake timers (the repo is vitest-only): the whole suite runs on a mocked clock
     vi.useFakeTimers();
 
     afterEach(() => {

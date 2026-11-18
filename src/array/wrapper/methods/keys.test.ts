@@ -3,8 +3,10 @@ import { arrayWrapper } from '@presource/core';
 /**
  * `keys` contract (src/array/wrapper/methods/keys.ts).
  *
- * Regression focus: keys.ts:107 must sort with the NUMERIC comparator
- * `(a, b) => a - b`. The previous default `Array#sort()` coerced indexes to
+ * Regression focus: `keysFunction` must hand back indexes in ASCENDING NUMERIC order.
+ * The current implementation gets that for free from the single `instance.each`
+ * collection pass (it pushes matches as it walks 0..length-1, no post-sort); the
+ * previous version post-sorted with a plain `Array#sort()`, which coerced indexes to
  * strings, so any wrapped array with 10+ elements produced
  * [0,1,10,11,2,...] and every consumer (`get`, `remove`) inherited the shuffle.
  */
@@ -20,8 +22,10 @@ describe('For extracting keys from an array function', () => {
     const boolies = [1, 0, true, false, ''];
 
     test('default request returns every index in strict ascending numeric order', () => {
-        // REGRESSION (keys.ts:104-107): before the numeric comparator this came back
-        // as [0,1,10,11,2,3,4,5,6,7,8,9] because Array#sort compares strings.
+        // REGRESSION: the pre-single-pass build post-sorted the collected indexes with a plain
+        // `Array#sort()` (no comparator), which compares strings, so this came back as
+        // [0,1,10,11,2,3,4,5,6,7,8,9]. The current single ascending pass (see the
+        // `keysFunction` JSDoc) has no comparator left to regress.
         expect($array(twelve).keys()).toStrictEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
         expect($array(letters).keys()).toStrictEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
         // Pin the exact buggy ordering as a negative assertion so a comparator change cannot regress silently
@@ -57,7 +61,8 @@ describe('For extracting keys from an array function', () => {
     });
 
     test('boolean request matches by element truthiness', () => {
-        // keys.ts:80 compares `value === !!data.value`; falsey set is 0, '' and false
+        // `keysFunction`'s `matches` predicate tests truthiness as `matchTruthy && !!value`
+        // (and `matchFalsey && !value`); falsey set is 0, '' and false
         expect($array(boolies).keys(true)).toStrictEqual([0, 2]);
         expect($array(boolies).keys(false)).toStrictEqual([1, 3, 4]);
 
@@ -205,8 +210,8 @@ describe('For extracting keys from an array function', () => {
         const visits = vi.fn(() => true);
         const wrapper = $array(twelve, { filter: [visits] });
         // The filter predicate runs once per element per keys() call, so a single
-        // pass over the 12-element fixture is exactly 12 calls. Before the H2 fix
-        // these 8 criteria ran one full pass each, i.e. 96 calls.
+        // pass over the 12-element fixture is exactly 12 calls. Before the single-pass
+        // rewrite these 8 criteria ran one full pass each, i.e. 96 calls.
         expect(wrapper.keys(['odd', 'even', 'valid', 'invalid', true, false, 0, 10])).toStrictEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
         expect(visits.mock.calls.length).toBe(12);
         visits.mockClear();

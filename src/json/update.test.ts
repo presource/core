@@ -1,13 +1,14 @@
 import { jsonUpdate } from '@presource/core';
 
 /**
- * Contract source: `src/json/update.ts` (see the pending bug note at update.ts:28).
+ * Contract source: `jsonUpdate` in `src/json/update.ts` (see the pending bug note above it).
  *
  * Identity contract (probed, pinned below):
  *  - The call MUTATES `primaryObject` in place and returns that same reference whenever a merge
- *    actually happens (update.ts:30 `let result = primaryObject`).
+ *    actually happens (`jsonUpdate` assigns through the primary's own container).
  *  - Subtrees of `secondaryObject` are ALIASED into the result whenever the primary has no value
- *    at that position (type mismatch branch, update.ts:56-59) — they are not cloned.
+ *    at that position (`jsonUpdate`'s final "everything else" branch returns the secondary
+ *    as-is) — they are not cloned.
  *  - Where both sides already hold an object/array of the same type, the PRIMARY's container is
  *    kept and updated key-by-key / index-by-index, so the result never aliases the secondary.
  */
@@ -98,7 +99,7 @@ describe('Basic jsonMerge Test', () => {
 });
 
 describe('jsonUpdate mutation and identity contract', () => {
-    // update.ts:30 keeps the primary reference, so the return value IS the primary object.
+    // `jsonUpdate` returns the mutated primary container, so the return value IS the primary object.
     test('should return the primary reference and mutate it for an object merge', () => {
         const primary: Record<string, any> = { a: 1 };
         const secondary = { b: 2 };
@@ -345,7 +346,7 @@ describe('jsonUpdate type mismatch and non-merge paths', () => {
 });
 
 /**
- * Pins for the predicate-based dispatch (update.ts:56-84): the merge decision now uses
+ * Pins for the predicate-based dispatch (the `jsonUpdate` body in src/json/update.ts): the merge decision now uses
  * `Array.isArray` / `isObject` instead of `typeName` equality + `typeSwitch`, so the only
  * observable change is for "imitation containers" whose own `constructor.name` mimics a
  * built-in. Those used to satisfy typeName equality and be rebuilt into a fresh `[]`/`{}`;
@@ -378,7 +379,7 @@ describe('jsonUpdate predicate dispatch', () => {
 
     // Genuine delta, not preserved behaviour: under the old `typeName(a) === typeName(b) &&
     // a !== b` test the `0`/`-0` pair failed `a !== b`, so it took the `else` branch — which
-    // ALWAYS returned the SECONDARY. HEAD therefore gave `jsonUpdate(0, -0) === -0` and
+    // ALWAYS returned the SECONDARY. The previous implementation therefore gave `jsonUpdate(0, -0) === -0` and
     // `jsonUpdate(-0, 0) === 0`; the identity guard now keeps the PRIMARY instead. NaN never
     // compares equal, so it still falls through to the secondary (that half is unchanged).
     test('should keep the primary for ===-equal primitives and take the secondary for NaN', () => {

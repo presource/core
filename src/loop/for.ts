@@ -1,9 +1,10 @@
 /**
  * For-loop abstractions (synchronous and asynchronous).
  *
- * Provides count-driven iteration helpers.  Each iteration receives a
- * rich argument object containing the current index, total length,
- * iteration count, and prior result.
+ * Provides count-driven iteration helpers.  Each iteration receives ONE shared, mutable
+ * argument record (the same object every pass) carrying the callback itself, the current
+ * index, the stop bound, the pass counter, and the prior result — so a callback that
+ * wants to keep the payloads must snapshot them itself.
  */
 
 
@@ -12,11 +13,14 @@
 /**
  * Argument object passed to the callback on every iteration.
  *
- * @property callback - The callback function.
- * @property index - Current iteration index.
+ * @property callback - The callback function (echoed back on the record).
+ * @property index - Current iteration index (starts at `start`, stops at `length`).
  * @property length - Total number of iterations to perform.
- * @property count - Zero-based iteration counter.
- * @property result - The return value from the previous callback invocation.
+ * @property count - Zero-based pass counter; increments only on passes that do NOT break.
+ * @property result - The last callback return value. Assigned before the break check, so
+ *   a defined value IS returned by the loop, but a following pass never exists and a
+ *   continuing pass always stores `undefined` — a callback can never observe a defined
+ *   `result` (docs/issues/0004).
  */
 type Argument = {
   callback: Callback;
@@ -29,7 +33,8 @@ type Argument = {
 /**
  * Function invoked each iteration of a for loop.
  *
- * @param args - The current iteration arguments (including shorthand aliases).
+ * @param args - The shared, mutable iteration record (no shorthand aliases —
+ *              the keys are exactly those of {@link Argument}).
  * @returns The iteration result.  Returning a non-`undefined` value
  *          signals success and immediately breaks the loop.
  */
@@ -78,14 +83,15 @@ const getParams: Structure = (length, callback, start = 0) => {
 /**
  * Synchronous for-loop: iterate a fixed number of times.
  *
- * Builds an argument record and invokes
+ * Builds one argument record and invokes
  * *callback* on each pass.  The loop stops early if the callback
  * returns a non-`undefined` value (treated as a final success result).
  *
- * @param length - Total number of iterations.
+ * @param length - Total number of iterations (stop bound for `index`).
  * @param callback - Function to execute each iteration.
  * @param start - Optional starting index (defaults to `0`).
- * @returns The final value of `record.result` after the loop ends.
+ * @returns The breaking return value; `undefined` when the loop runs out of
+ *          iterations or every pass continued with `undefined`.
  */
 export const loopFor: Structure = (length, callback, start = 0) => {
   const record = getParams(length, callback, start);

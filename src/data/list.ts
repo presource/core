@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * const mylist = { user1: { name: "Alice", age: 30 } };
- * const observable = dataList(mylist, { name: ({ v }) => console.log("name changed to", v) });
+ * const observable = dataList(mylist, { name: ({ value }) => console.log("name changed to", value) });
  * observable.user1.name = "Bob"; // logs: "name changed to Bob"
  * ```
  */
@@ -60,7 +60,7 @@ type DataList = <T extends {}>(list: { [key: string]: any }, structure: T) => an
  *
  * When a property on the returned proxy is set, the function examines the
  * `structure` template for a matching callback. If found, the callback is
- * invoked with `{ id, list, key, previous, value }` (plus short aliases).
+ * invoked with exactly `{ id, list, key, previous, value }` - there are no short aliases.
  *
  * Object-valued assignments are flattened so that a callback fires for
  * every nested leaf property.
@@ -81,16 +81,18 @@ export const dataList: DataList = (list: any, structure) => {
         if (method === 'set') {
             // The entry key at the root of the path is the same for every leaf of
             // this assignment, so it is read once instead of per callback firing.
-            // `path` is a fresh array per trap (observe.ts:86), and nothing below
-            // mutates it, so this snapshot stays valid.
+            // `path` is a fresh array per trap (the `[...level.prefix, key]` snapshot each
+            // observe trap builds), and nothing below mutates it, so holding on to it for the
+            // whole callback fan-out is safe.
             const id = path[0];
 
             /**
-             * Helper: look up the callback for a given pointer path and invoke it.
+             * Helper: look up the callback for a pointer path and invoke it.
              *
-             * @param key - The full dotted property path within the entry (e.g. "user1.name").
-             * @param pointer - The path into the `structure` template (without the entry id).
-             * @param v - The new value that was assigned.
+             * @param args - `{ key, pointer, value }`: `key` is the full dotted property path
+             *        within the list (e.g. "user1.name", reported to the callback), `pointer` is
+             *        the path into the `structure` template (without the entry id), and `value`
+             *        is the newly assigned leaf value.
              */
             const triggerCallback = ({ key, pointer, value: val }: any) => {
                 const callback = objectExtract(structure, pointer);

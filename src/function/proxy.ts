@@ -6,11 +6,11 @@
 
 /** Arguments object provided to the proxy callback on each intercepted operation. */
 type Arguments = {
-    // The method that this function was called
+    // Which operation was intercepted: invoke, property read, or property write
     method: 'call' | 'get' | 'set';
-    // The key that is currently called
+    // The property key involved — `null` for a bare call with no preceding `.property` read
     key: null | string;
-    // Any parameter has been called
+    // Call args for `call`; for `set` the value as an array (arrays pass through as-is); empty for `get`
     params: any[];
 };
 
@@ -32,15 +32,20 @@ type Callback = (args: Arguments) => any;
 export const functionProxy = (callback: Callback) => {
     let currentKey: null | string = null;
 
-    // TODO: pending - BUG: throughGetQuery is shared across proxies created from the same functionProxy call. Should be per-proxy state
+    // TODO: pending - `throughGetQuery` / `currentKey` live in this factory closure and are
+    // only cleared when the proxy is CALLED, so a property read used for a non-call purpose
+    // leaves the flag set and the next bare call is reported with that stale key (pinned in
+    // src/function/proxy.test.ts, "a property read without a call leaves the key for the
+    // next call"). Each `functionProxy` call owns its own pair — see the sibling test
+    // "each functionProxy call owns its own key state" (docs/issues/0011, P3).
     let throughGetQuery = false;
-    // Constructing the Stand in proxy function — invoked when the proxy is called as a function
+    // Stand-in proxy function — the Proxy target, invoked when the proxy is called as a function
     const proxyFunction = (...params: any[]) => {
-        // Updating Key — only capture the key if a prior `.get` set it
+        // Only report a key when the call directly follows a `.property` read on this proxy
         const key = throughGetQuery ? currentKey : null;
         // Return the Callback
         const result = callback({ key, method: 'call', params });
-        // Reset the switch
+        // Reset the switch — this is the ONLY place the flag is cleared
         throughGetQuery = false;
         // Returning the Result From Callback
         return result;
@@ -51,7 +56,7 @@ export const functionProxy = (callback: Callback) => {
         callback({
             key,
             method: 'set',
-            // Normalize the assigned value into an array for uniform handling
+            // Uniform array form: an existing array passes through by reference, else wrapped
             params: Array.isArray(value) ? value : [value]
         });
 
@@ -61,7 +66,8 @@ export const functionProxy = (callback: Callback) => {
         currentKey = key;
         // Remember that it went through get Query — so the next call() knows which property was accessed
         throughGetQuery = true;
-        // Updating Previous key
+        // A truthy callback result becomes the property's value; a falsy one leaks the
+        // RAW unproxied target (`target`), which is still callable but not the proxy.
         return callback({ key, method: 'get', params: [] }) || target;
     };
 

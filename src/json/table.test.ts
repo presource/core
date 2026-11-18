@@ -211,8 +211,8 @@ describe('jsonTable', () => {
         });
 
         it('swaps with last when deleting a non-tail entry (covers swap-with-last O(1) delete)', () => {
-            // Covers json/table.ts lines 170-175: the swap-with-last block.
-            // When deleting an entry that is NOT the last one, the last entry is moved
+            // The swap-with-last block in `delete`: when deleting an entry that is NOT the last
+            // one, the last entry is moved
             // into the deleted entry's slot and its Map cache entry is updated.
             const table = jsonTable<TestRecord>({ name: 'test', key: 'id' });
             table.add({ id: '1', name: 'Alpha' });
@@ -234,7 +234,7 @@ describe('jsonTable', () => {
         });
 
         it('handles null id in moved entry during swap delete', () => {
-            // Covers json/table.ts line 174: `if (movedId != null)` false branch.
+            // The `if (movedId != null)` guard in `delete`: false branch.
             // When the moved (swapped) entry has a null id on the active id-field,
             // the Map cache must skip the index.set for that entry.
             // We need the last entry (which gets swapped) to have null for the
@@ -358,7 +358,7 @@ describe('jsonTable', () => {
 
     describe('string overload (tableName only)', () => {
         it('creates table from string name with auto key', () => {
-            // Covers json/table.ts line 47: `typeof input === 'string'` branch.
+            // The `typeof input === 'string'` branch of `jsonTable`'s config setup.
             // When jsonTable is called with a string, it generates config with
             // name=input and key=`${input}Id`.
             const table = jsonTable<any>('users');

@@ -58,8 +58,8 @@ describe('Callback relay', () => {
         const runRelay = relay.step();
 
         // The accessor returned by `scriptChain` is a plain function, NOT the run
-        // relay (src/script/chain.ts:61-63, 99-101), so awaiting it does not wait
-        // for the queue to drain.
+        // relay (src/script/chain.ts:78-80 stub, 151 trigger attach), so awaiting it
+        // does not wait for the queue to drain.
         expect(await relay).toBe(relay);
         expect(result).toStrictEqual([]);
 
@@ -70,7 +70,8 @@ describe('Callback relay', () => {
 
     // CONTRACT: every key of the input map becomes a callable method on the
     // returned accessor, and the accessor itself is a plain function whose direct
-    // call is a no-op returning null (src/script/chain.ts:61-63, 99-101).
+    // call is a no-op returning null (src/script/chain.ts:78-80 stub, 151 trigger
+    // attach).
     test('Every key becomes a relay method on the returned accessor', () => {
         const relay = scriptChain({
             apple: () => {},
@@ -89,7 +90,7 @@ describe('Callback relay', () => {
 
     // CONTRACT: invoking a trigger does NOT run the callback synchronously — it
     // enqueues into the internal `functionQueue` (deferred by one timer) and hands
-    // back the lazily generated relay (src/script/chain.ts:68-79).
+    // back the lazily generated relay (src/script/chain.ts:78-89).
     test('Trigger enqueues instead of running inline and returns the run relay', async () => {
         const result: string[] = [];
         const relay = scriptChain({
@@ -119,7 +120,7 @@ describe('Callback relay', () => {
 
     // CONTRACT: the relay is regenerated for the next run — after the queue drains
     // the internal relay/queue are cleared, so the next trigger builds fresh ones
-    // (src/script/chain.ts:82-97).
+    // (the `complete` listener inside `generateInstance` nulls `relay` and `queue`).
     test('Relay is regenerated after the queue drains', async () => {
         const result: string[] = [];
         const relay = scriptChain({
@@ -148,7 +149,8 @@ describe('Callback relay', () => {
 
     // CONTRACT: the callback payload is exactly `{ script, args }`, where `script`
     // is the accessor object returned by `scriptChain` and `args` is the verbatim
-    // argument list of the trigger call (src/script/chain.ts:72-75).
+    // argument list of the trigger call (the trigger wrapper builds `const params = { script, args }`
+    // in src/script/chain.ts).
     test('Callback payload is exactly { script, args }', async () => {
         const payloads: { keys: string[]; args: unknown[]; isAccessor: boolean; returnType: string }[] = [];
 
@@ -230,7 +232,7 @@ describe('Callback relay', () => {
 });
 
 /**
- * G2 — async failure contract of the relay.
+ * Async failure contract of the relay.
  *
  * Before the fix, a callback whose promise rejected killed the backing
  * `functionQueue` (its promise chain had no rejection handler), so `complete`
@@ -356,10 +358,10 @@ describe('Callback relay - async failure contracts', () => {
 
     test('a callback rejecting with `undefined` rejects the relay with reason `undefined`', async () => {
         // `functionQueue` reports a failure through the PRESENCE of the `error` key of the
-        // `execute` payload (src/function/queue.ts:19-22, 127-131), so a reason of `undefined`
-        // is still a failure and the relay must reject with it. The old value check
-        // (`payload.error !== undefined`) could not see this reason and resolved the run,
-        // contradicting the JSDoc in src/script/chain.ts:59-62.
+        // `execute` payload (src/function/queue.ts:15-22 doc, 135-138 rejection handler), so
+        // a reason of `undefined` is still a failure and the relay must reject with it. The
+        // old value check (`payload.error !== undefined`) could not see this reason and
+        // resolved the run, contradicting the `scriptChain` JSDoc (src/script/chain.ts:61-74).
         const relay: any = scriptChain({
             fail: () => Promise.reject(undefined)
         });

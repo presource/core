@@ -1,10 +1,12 @@
 /**
  * Emptiness-checking utilities.
  *
- * Provides helpers for determining whether a value is "empty" based on
- * its type: numbers are empty when NaN, strings when blank (after trim),
- * arrays when all nested elements are empty, and objects when all
- * nested property values are empty.
+ * Provides helpers for determining whether a value is "empty". The rule is
+ * type-driven (via `typeSwitch`): numbers are empty when NaN, strings when blank
+ * after trimming, arrays when every element is itself empty, objects when every
+ * property value is itself empty — and for everything else (including
+ * `null`/`undefined`/booleans/dates, which have no case here) emptiness is plain
+ * truthiness, so a TRUTHY value reports empty and a falsy one reports non-empty.
  */
 import { typeSwitch } from '../type';
 import { arrayEach } from '../array';
@@ -19,7 +21,8 @@ import { objectEach } from '../object';
  * - **string**: empty when whitespace-trimmed result is `''`
  * - **array**: empty when every element is itself empty (recursive)
  * - **object**: empty when every property value is itself empty (recursive)
- * - **default**: truthy/falsy evaluation of the raw value
+ * - **default** (everything else, including `null`, `undefined`, booleans, dates,
+ *   functions): emptiness is `!!input` — a truthy value is EMPTY and a falsy one is not
  *
  * @param input - The value to test.
  * @returns `true` if the value is considered empty; `false` otherwise.

@@ -9,13 +9,15 @@ import { arrayShuffle } from '../array';
 /**
  * Returns a new object whose properties are in a random (shuffled) order.
  *
- * Extracts the keys, shuffles them, then reconstructs the object.
+ * Extracts the keys, shuffles them, then reconstructs the object. Only the key order
+ * changes: values are carried over by reference, and inherited keys are dropped.
  *
  * @param object - The object to shuffle.
  * @returns A new object with the same entries but keys in random order.
  */
 export const objectShuffle = (object: { [key: string]: any }): { [key: string]: any } => {
-  // Get the Keys Information
+  // Feeding the shuffled keys in this order is what re-orders the result. The new order is
+  // only observable for non-integer keys: integer-like keys always enumerate first, ascending.
   const keys = Object.keys(object);
 
   const result: any = {};
@@ -27,6 +29,5 @@ export const objectShuffle = (object: { [key: string]: any }): { [key: string]: 
     result[key] = object[key];
   });
 
-  // Returning the Result
   return result;
 };

@@ -22,7 +22,7 @@ describe('functionControl requirements', () => {
 
         // Building a controlling fruit object
         const fruits = functionControl(({ key }) => {
-            // Return the value or return serror
+            // Unknown keys fall back to a function that returns 'error'
             return (availableFruits as any)[key] || (() => 'error');
         });
 

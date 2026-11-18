@@ -4,12 +4,11 @@
  * Removes elements from the wrapped array based on a key selection request.
  * Mutates the underlying array and returns the instance for chaining.
  *
- * PERFORMANCE CONTRACT (H3): compaction runs in a single forward pass. The
+ * PERFORMANCE CONTRACT: compaction runs in a single forward pass. The
  * previous implementation called `element.splice(pointer, 1)` once per removal,
  * and every splice shifts the whole tail, so removing k of n elements was
  * O(n*k) — measured 965x slower than a rebuild at n=1000, k=500.
- * See Temp/coding-perf/bench-out.txt. `retain` (retain.ts:41) funnels here, so
- * it inherits the same fix.
+ * `retain` (retain.ts:41) funnels here, so it inherits the same fix.
  */
 
 import { Params } from '..';

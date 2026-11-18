@@ -7,9 +7,9 @@ import { typeConstructor, typeName } from '@presource/core';
  * Expected runtime surface, hand-derived from the four `export *` lines in
  * src/type/index.ts (lines 8-11) and the runtime exports of each source file:
  *   ./constructor    -> typeConstructor  (src/type/constructor.ts:9)
- *   ./name           -> typeName         (src/type/name.ts:14)
- *   ./switch         -> typeSwitch       (src/type/switch.ts:81)
- *   ./switchAsync    -> typeSwitchAsync  (src/type/switchAsync.ts:92)
+ *   ./name           -> typeName (src/type/name.ts:29)
+ *   ./switch         -> typeSwitch (src/type/switch.ts:154)
+ *   ./switchAsync    -> typeSwitchAsync (src/type/switchAsync.ts:132)
  *
  * `TypeSwitch` / `TypeSwitchAsync` / `Cases` are type-only exports.
  */
@@ -33,7 +33,7 @@ describe('type barrel (src/type/index.ts)', () => {
     test('the re-exported switch dispatchers resolve cases exactly (switch.ts:81+)', async () => {
         expect(typeModule.typeSwitch('x', { string: ({ value }: any) => `string:${value}`, default: () => 'other' }))
             .toBe('string:x');
-        // A non-function case value is returned raw (switch.ts:103)
+        // A non-function case value is returned raw (switch.ts:163)
         expect(typeModule.typeSwitch(1, { number: 'raw-number', default: 'other' })).toBe('raw-number');
         // null / undefined have no constructor; the '' fallback maps them to their names
         expect(typeModule.typeSwitch(null, { null: () => 'is-null', default: () => 'other' })).toBe('is-null');

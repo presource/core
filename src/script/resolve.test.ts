@@ -254,12 +254,12 @@ describe('Callback resolver', () => {
     });
 
     // ------------------------------------------------------------------
-    // G16 PINNED CONTRACT — a THROWING predicate is not a retry trigger.
-    // The JSDoc (src/script/resolve.ts:22-43) only documents "returns the first valid
-    // value, or `undefined` after exhausting retries"; it never mentions throwing. The
-    // actual behaviour is that the error escapes `loopForAsync` (src/loop/for.ts:129-137)
-    // and the returned promise REJECTS with the original error, on the FIRST attempt,
-    // with no further polling and no delay scheduled.
+    // Pinned contract — a THROWING predicate is not a retry trigger.
+    // The `ScriptResolve` / `scriptResolve` JSDoc in src/script/resolve.ts only documents
+    // "returns the first valid value, or `undefined` after exhausting retries"; it never
+    // mentions throwing. The actual behaviour is that the error escapes `loopForAsync`
+    // (src/loop/for.ts) and the returned promise REJECTS with the original error, on the
+    // FIRST attempt, with no further polling and no delay scheduled.
     // ------------------------------------------------------------------
     test('A synchronously throwing predicate rejects immediately after one attempt', async () => {
         const spy = vi.fn(() => {

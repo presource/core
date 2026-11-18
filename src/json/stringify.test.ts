@@ -3,7 +3,8 @@ import { jsonStringify } from '@presource/core';
 /**
  * Contract source: `src/json/stringify.ts`.
  *
- * `jsonStringify` is `JSON.stringify` plus an ancestor-stack replacer (stringify.ts:57-95).
+ * `jsonStringify` is `JSON.stringify` plus an ancestor-stack replacer (the anonymous
+ * `function (this, key, value)` inside `jsonStringify`, stringify.ts:86-144).
  * The replacer pushes each object it enters and pops everything above the current parent, so a
  * value found in the stack is a TRUE cycle (omitted for objects, `null` for array elements) while
  * a value shared only between siblings serializes normally.
@@ -31,7 +32,7 @@ describe('jsonStringify', () => {
         expect(jsonStringify(obj)).toBe(JSON.stringify(obj));
     });
 
-    // --- Replacer pass-through semantics (stringify.ts:59-61) ---
+    // --- Replacer pass-through semantics (`jsonStringify` forwards the replacer to `JSON.stringify`) ---
     // The replacer returns primitives untouched, so native JSON rules apply verbatim.
 
     test('should stringify non-finite numbers and -0 like native JSON', () => {
@@ -186,7 +187,7 @@ describe('jsonStringify', () => {
         expect(jsonStringify(obj)).toBe('{"a":{"value":42},"b":{"value":42}}');
     });
 
-    // The stack pop step (stringify.ts:75-77) is what makes sibling reuse safe: an object that
+    // The ancestor-stack pop `while` loop (src/json/stringify.ts:105-111) is what makes sibling reuse safe: an object that
     // was a descendant on one branch is still serializable on the next branch.
     test('should serialize the same object at different depths without a cycle', () => {
         const leaf = { l: 1 };

@@ -2,10 +2,11 @@
  * Synchronous type-switch utility.
  *
  * Inspects the runtime type of a value and dispatches to a matching
- * case callback. Each callback also receives helper methods (e.g.
- * `args.number()`, `args.N()`) so a matched handler can further
- * delegate based on nested types. For the async variant see
- * {@link typeSwitchAsync}.
+ * case callback. Each callback also receives one nested-delegation helper
+ * PER DECLARED CASE KEY of `cases` (declaring a `number` case adds
+ * `args.number()`; there are no built-in or short-form aliases), so a
+ * matched handler can re-dispatch another value into any case handler it
+ * declared. For the async variant see {@link typeSwitchAsync}.
  *
  * PERF NOTES (measured, paired in-process against the pre-optimisation build):
  * - The args object is built eagerly with a plain `Object.keys` loop. Two lazy
@@ -59,6 +60,12 @@ type Cases<T> = {
  * Nested delegation helpers injected into each case callback's `args`.
  * Each property is a sync callback that, when called, will dispatch
  * to the corresponding case handler with the provided value.
+ *
+ * The declared keys below are the documented set only: at runtime the injected
+ * helpers are exactly `Object.keys(cases)`, so an unrecognised key (e.g. `wat`)
+ * also arrives as a helper, and a documented key with no entry in `cases` does
+ * not (pinned in src/type/switch.test.ts, 'injects exactly one nested helper
+ * per declared case key').
  */
 type Nested = {
     default: Callback;

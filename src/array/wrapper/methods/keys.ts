@@ -4,11 +4,11 @@
  * Resolves a filter request into an array of matching indexes (keys).
  * Supports filtering by number, string keyword, boolean, or combined arrays.
  *
- * PERFORMANCE CONTRACT (H2): the request is first COMPILED into per-criterion
+ * PERFORMANCE CONTRACT: the request is first COMPILED into per-criterion
  * flags, then ONE filter-aware pass collects the matching indexes. The previous
  * implementation ran one full `instance.each` pass per criterion (and one proxy
  * property read per pass), which is O(n*m) — measured 301x slower than the
- * Set-based single pass at n=1000, m=200. See Temp/coding-perf/bench-out.txt.
+ * Set-based single pass at n=1000, m=200.
  */
 
 import { Params } from '..';
@@ -162,7 +162,7 @@ export const keysFunction: KeysFunction = (params, request) => {
 
     // ONE pass over the filtered population, and only ONE proxy property read.
     // Block-bodied callback: it must not return a value, or `arrayEach` would
-    // short-circuit the whole pass (each.ts:83 treats non-undefined as "stop").
+    // short-circuit the whole pass (src/array/each.ts:83 treats non-undefined as "stop").
     instance.each(({ index, value }: any) => {
         if (matches(index, value)) result.push(index);
     });

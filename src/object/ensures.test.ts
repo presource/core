@@ -21,7 +21,7 @@ describe('Array Ensures: Ensuring a variable is an array', () => {
     });
 
     // ----------------------------------------------------------------------------------------
-    // Edge cases. Contract source: src/object/ensures.ts:25-49, dispatched by typeSwitch
+    // Edge cases. Contract source: `objectEnsures` in src/object/ensures.ts, dispatched by typeSwitch
     // (src/type/switch.ts) which resolves the bucket from the value's constructor name.
     // ----------------------------------------------------------------------------------------
 

@@ -65,7 +65,7 @@ describe('Object Create Test', () => {
     // ----------------------------------------------------------------------------------------
     // Edge cases. Contract source: src/object/create.ts:39-88.
     // Keys are normalised by typeSwitch (number | string | array, everything else -> []); a
-    // number is treated as a count and drives the direct loop at create.ts:79. Values are
+    // number is treated as a count and drives the direct `keyCount` loop in `objectCreate`. Values are
     // resolved by a second typeSwitch (function | array-by-index | literal broadcast).
     // All expected values below were captured from the runtime, not assumed.
     // ----------------------------------------------------------------------------------------
@@ -77,8 +77,8 @@ describe('Object Create Test', () => {
     });
 
     test('number keys hand the callback numeric values, not stringified keys', () => {
-        // create.ts:79-81 hands the raw numeric counter to the callback as `value`, so it stays a
-        // number and is never the stringified property key
+        // The `keyCount` loop in `objectCreate` hands the raw numeric counter to the callback as
+        // `value`, so it stays a number and is never the stringified property key
         const args: unknown[] = [];
         const result = objectCreate(2, (data: any) => {
             args.push(data);
@@ -165,7 +165,7 @@ describe('Object Create Test', () => {
 
     test('invalid number counts collapse to zero keys', () => {
         // the numeric key branch clamps negatives/fractionals/NaN the same way arrayCreate does
-        // (create.ts:51 mirrors array/create.ts:71)
+        // (`objectCreate`'s numeric branch mirrors `arrayCreate`'s number-mode clamp)
         expect(objectCreate(-3, 'v')).toStrictEqual({});
         expect(objectCreate(NaN, 'v')).toStrictEqual({});
         expect(objectCreate(2.7, 'v')).toStrictEqual({ 0: 'v', 1: 'v' });

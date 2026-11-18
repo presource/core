@@ -22,7 +22,9 @@ import { randomFunction } from './methods/random';
  * Parameter object passed to every wrapper method.
  *
  * Contains the wrapper factory, the underlying array element, filter config,
- * and the proxy instance. Shorthand aliases (w, e, c, i) are also provided.
+ * and the proxy instance. The `w`/`e`/`c`/`i` shorthands declared below are part of the
+ * type only: the get trap builds the params object with the long names alone, so a method
+ * always reads `undefined` from the shorthands.
  */
 export type Params = {
     /** The wrapper factory function used to create new wrapper instances. */
@@ -76,7 +78,11 @@ type Returned<T extends ExtendList<T>> = {
         (...args: any[]): any;
     };
 } & {
-    /** Invoke the wrapper to extract the underlying array. */
+    /**
+     * Invoking the instance runs the placeholder target, so the call yields `null` — it does
+     * NOT hand back the wrapped array (pinned by "the instance is a callable proxy backed by
+     * the placeholder handler" in src/array/wrapper/index.test.ts).
+     */
     (): any;
     /** Count matching elements, optionally filtered by type. */
     count: (request?: Parameters<typeof countFunction>[1]) => number;
@@ -113,7 +119,9 @@ type Structure = (callbacks?: any) => (element: any[], config?: any) => any;
  */
 export const arrayWrapper: Structure = (callbacks: any = {}) => {
     const wrapper = (element: any[], config = {}) => {
-        // Placeholder handler for advanced usage (not yet implemented)
+        // Placeholder handler for advanced usage (not yet implemented). It is the Proxy *target*,
+        // so `instance()` is callable but always yields `null` — the apply path never reaches
+        // the array. Method reads do not go through it (they resolve from the get trap below).
         const handler = () => {
             return null;
         };

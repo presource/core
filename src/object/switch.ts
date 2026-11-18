@@ -1,20 +1,29 @@
 /**
  * Object switch utility.
  *
- * Provides switch-case-like behavior over object keys. The first matching
- * key in the data triggers the corresponding case callback.
+ * Provides switch-case-like behavior over object keys. Case keys are walked in their own
+ * insertion order, and the first case key present in the data triggers its callback.
  */
 
 import { objectHasKey } from './has';
 
 /** Callback argument object with re-loop helpers for each registered case. */
 type Argument<T> = {
-  /** The matched property key. */
+  /** The matched property key. Absent on the fallback path, where no case matched. */
   key: string;
-  /** The value associated with the matched key. */
+  /** The value associated with the matched key. Also absent when only the fallback ran. */
   value: any;
-  /** Re-invokes `objectSwitch` with the default case key to allow re-dispatch. */
+  /**
+   * Re-loop helper for the `default` entry. It re-enters `objectSwitch` with
+   * `{ default: <the default handler> }` as the data; `default` is never a match
+   * candidate, so the walk falls straight through to the fallback and `cases.default`
+   * runs a second time (pinned by "a default reloop helper runs the fallback exactly
+   * once" in src/object/switch.test.ts).
+   */
   default: (value: any) => any;
+  // One re-loop helper per registered case key. Like the `default` helper above, each one
+  // ignores its argument: it re-dispatches with `{ [key]: <the case handler> }` as the data,
+  // so the handler arrives as `value` instead of the caller's argument.
 } & { [key in keyof T]: (value: any) => any };
 
 /** A case callback that receives the argument object. */
@@ -30,14 +39,19 @@ type Structure = <T>(value: Data, cases: Cases<T>) => any;
 /**
  * Evaluates an object against a set of switch-case callbacks.
  *
- * Iterates over the own enumerable keys of `cases` (excluding `default`) and invokes the
- * first callback whose key exists in `data`. The callback receives re-loop
- * functions for every case key, enabling chained re-dispatch. If no
- * case matches, the optional `default` fallback is invoked.
+ * Walks the own enumerable keys of `cases` in insertion order (`default` is never a match
+ * candidate) and invokes every callback whose key exists in `data`. The walk stops at the
+ * first callback that returns a defined value, so a matching case returning `undefined`
+ * lets later matching cases run. Once any case has matched, its return value is the
+ * result and the `default` fallback never runs; only a walk that matched nothing invokes
+ * the fallback. Each callback receives re-loop functions for every case key, enabling
+ * chained re-dispatch.
  *
  * @param data - The object to match against.
  * @param cases - A map of keys to case callbacks, optionally with a `default`.
- * @returns The result of the triggered callback, or `undefined`.
+ * @returns The first defined callback result - from a case or, if nothing matched, from the
+ *          fallback; `undefined` when nothing produced one (a case matched but returned
+ *          undefined, or nothing matched and the fallback returned undefined / was absent).
  */
 export const objectSwitch: Structure = (data, cases) => {
   // Widened once so the loop can index the cases map with its own runtime keys.
@@ -85,7 +99,8 @@ export const objectSwitch: Structure = (data, cases) => {
     // Checking if data has the key (own keys only, so inherited data keys never match)
     if (!objectHasKey(data, key)) continue;
 
-    // Set Trigger to True For Switch to know when to stop
+    // Record that a case matched: this flag alone decides whether the `default`
+    // fallback may still run. The walk itself stops on a defined result (below).
     triggered = true;
 
     const currentParams = getParams();
@@ -101,10 +116,11 @@ export const objectSwitch: Structure = (data, cases) => {
     if (result !== undefined) break;
   }
 
-  // Testing Return result
+  // Any match at all wins over the fallback, even a case that returned undefined
   if (triggered) return result;
-  // if Fallback is Triggered instead. The truthiness guard is kept on purpose: a non-function
-  // truthy `default` still surfaces the same TypeError callers saw before.
+  // Nothing matched: fall back to `default` when one was registered. The truthiness guard
+  // is kept on purpose: a non-function truthy `default` still surfaces the same TypeError
+  // callers saw before.
   if (fallback) return fallback(getParams());
-  // Else return undefined.
+  // No case matched and no fallback exists, so the function simply ends and yields undefined
 };

@@ -26,7 +26,10 @@ type Curried<F> = F extends (first: infer A, ...rest: infer Rest) => infer R
  */
 export const functionCurry = <F extends (...args: any[]) => any>(fn: F): Curried<F> => {
     const curried = (...args: any[]): any => {
-        // TODO: pending - fn.length doesn't account for rest parameters. Curry fires too early for (...rest)
+        // TODO: pending - `fn.length` ignores rest parameters and default-valued parameters, and
+        // the gate below is exact equality, so a `(...rest)` target (arity 0) only fires on a
+        // bare zero-argument call and an over-applied call never fires at all — such functions
+        // are effectively uncurriable (docs/issues/0011, P3).
         // If not all arguments provided yet, return a new partially-applied function
         if (fn.length !== args.length) {
             return curried.bind(null, ...args);

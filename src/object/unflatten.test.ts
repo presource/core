@@ -164,7 +164,7 @@ describe('objectUnflatten', () => {
     });
 
     test('A literally undefined buffered value still hoists as a present-but-undefined key', () => {
-        // M11: the per-segment / per-value `typeSwitch` dispatch became explicit branches. The
+        // The per-segment / per-value `typeSwitch` dispatch became explicit branches. The
         // empty-string buffer is the one place where a literal `undefined` could diverge, because
         // `current[''] = undefined` creates the key while keeping the value undefined, and the
         // hoist test below it then reads `Object.keys(current).length === 1`.
@@ -184,7 +184,7 @@ describe('objectUnflatten', () => {
     });
 
     test('Non plain-object values are buffered under the empty key, never treated as branches', () => {
-        // M11: `isObject` is constructor-strict, exactly like the old `typeSwitch` "object" bucket.
+        // `isObject` is constructor-strict, exactly like the old `typeSwitch` "object" bucket.
         // Arrays, class instances and prototype-less objects are leaves, so a deeper key below
         // them parks the original value under '' instead of merging into it.
         expect(objectUnflatten({ 'a.b': [1, 2], 'a.b.c': 3 })).toStrictEqual({ a: { b: { '': [1, 2], c: 3 } } });

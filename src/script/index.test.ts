@@ -6,9 +6,9 @@ import { scriptChain, scriptAsync, scriptPause } from '@presource/core';
  *
  * Expected runtime surface, hand-derived from the four `export *` lines in
  * src/script/index.ts (lines 8-11) and the runtime exports of each source file:
- *   ./async   -> scriptAsync   (src/script/async.ts:65)
- *   ./chain   -> scriptChain   (src/script/chain.ts:60)
- *   ./pause   -> scriptPause   (src/script/pause.ts:17)
+ *   ./async   -> scriptAsync   (src/script/async.ts:68)
+ *   ./chain   -> scriptChain (src/script/chain.ts:75)
+ *   ./pause   -> scriptPause (src/script/pause.ts:14)
  *   ./resolve -> scriptResolve (src/script/resolve.ts:44)
  *
  * `ScriptAsync`, `ScriptChain`, `ScriptResolve`, `Configs`, `RelayObject`, `Callback`

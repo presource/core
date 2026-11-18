@@ -1,10 +1,10 @@
 /**
  * Object proxy utility.
  *
- * Wraps a plain object in a JavaScript Proxy, intercepting property `get`
- * and `set` operations with custom trigger callbacks.
+ * Wraps an object (or any callable target) in a JavaScript Proxy, intercepting
+ * property `get` and `set` operations with custom trigger callbacks.
  *
- * Hot-path shape (perf issue H4): the params object is only built when a trigger is actually
+ * Hot-path shape: the params object is only built when a trigger is actually
  * registered, so plain pass-through reads and writes pay no allocation at all.
  */
 
@@ -47,12 +47,11 @@ type Triggers<T> = {
  * @returns A Proxy instance wrapping `item`.
  */
 export const objectProxy = <T extends { [key: string]: any }>(item: T, triggers: Triggers<T>): T => {
-    // Constructing Proxy
     return new Proxy(item, {
-        // The Get Proxy Function
+        // get trap
         get: (object: T, key: string | symbol) => {
             const strKey = key as string;
-            // Getting the Get Callback. Read per access (not hoisted) on purpose: the trigger
+            // The get trigger is read per access (not hoisted) on purpose: the trigger
             // object stays mutable after the proxy is built, matching the previous behaviour.
             const callback = triggers.get;
 
@@ -62,41 +61,41 @@ export const objectProxy = <T extends { [key: string]: any }>(item: T, triggers:
             if (!callback) return object[strKey];
 
             const method = 'get';
-            // The Current Value
+            // The stored value, read before the trigger is given control
             const value = object[strKey];
             // A fresh params object per access: a trigger may retain it, so it must never be
-            // reused between accesses (deferred contract change, trade-off T3)
+            // reused between accesses (deferred contract change)
             const params: any = {
                 key: strKey,
                 value,
                 object,
                 method,
-                // This is shorthanded notation
+                // Short aliases for the same four entries, so a trigger can destructure either spelling
                 k: strKey,
                 v: value,
                 o: object,
                 m: method
             };
 
-            // Return a value, either with proxy or not
+            // Whatever the trigger returns is what the caller reads — it may hand back a wrapped or
+            // derived value instead of the raw `value` above
             return callback(params);
         },
 
-        // The Set Proxy Function
+        // set trap
         set: (object: T, key: string | symbol, value: any) => {
             const strKey = key as string;
-            // Getting the callback function, read per access for the same reason as in `get`
+            // The set trigger is read per access for the same reason as in the `get` trap above
             const callback = triggers.set;
 
             // If no callback for set is set then do the ordinary assignment, with no params object
             if (!callback) {
                 (object as any)[strKey] = value;
-                // Return True
                 return true;
             }
 
             const method = 'set';
-            // Constructing the Params (fresh per access, see the `get` trap note above)
+            // Fresh params per access, same contract as in the `get` trap above
             const params: any = {
                 key: strKey,
                 value,
@@ -109,10 +108,11 @@ export const objectProxy = <T extends { [key: string]: any }>(item: T, triggers:
                 m: method
             };
 
-            // If callback Exists. Return Callback Trigger
+            // Run the trigger; its return value decides whether the write is accepted
             const result = callback(params);
-            // By default, it will always return true.
-            // if for some reason result is valid, return it. (could be false or true?)
+            // A nullish callback result means "no opinion", so the assignment proceeds (true).
+            // Anything the callback returns explicitly is used as-is, which is how a trigger
+            // can veto the write by returning `false`.
             return isInvalid(result) ? (true as any) : result;
         }
     });

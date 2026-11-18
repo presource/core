@@ -33,7 +33,9 @@ type TriggerList = { [key: string]: TriggerFunction };
  *
  * For each property in `input`, if a matching key exists in `triggers`,
  * the corresponding callback is invoked with a rich arguments object.
- * If the callback returns an object, it is merged into the output.
+ * If the callback returns a plain object, its own enumerable keys are shallow-merged into
+ * the output (overwriting on conflict); any other return value - including a primitive -
+ * is discarded, and the property itself is then absent from the output.
  * Properties with no matching trigger are copied unchanged.
  *
  * @param input - The object to iterate over.
@@ -41,12 +43,12 @@ type TriggerList = { [key: string]: TriggerFunction };
  * @returns A new object built from the trigger results.
  */
 export const objectTrigger = (input: { [key: string]: any }, triggers: TriggerList): { [key: string]: any } => {
-    // The Output Object. Built by Scanning Through the Input
+    // The output object, built by walking the input
     const output: { [key: string]: any } = {};
-    // Scanning Through the Input
+    // Every own key of the input is either routed to its trigger or copied over
     objectEach(input, ({ value, key }) => {
         if (objectHasKey(triggers, key)) {
-            // Constructing the Required Params
+            // The callback payload; `output` is live, so a trigger can read what came before
             const params: any = {
                 value,
                 key,
@@ -54,15 +56,14 @@ export const objectTrigger = (input: { [key: string]: any }, triggers: TriggerLi
                 output,
             };
 
-            // Constructing the Result
+            // Run the trigger for this key
             const result = triggers[key](params);
-            // Continue if It is an Object
+            // A plain-object result is shallow-merged into the output; anything else is dropped
             if (isObject(result)) objectUpdate(output, result);
         } else {
-            // Setting to itself
+            // No trigger registered: copy the entry through as-is
             output[key] = value;
         }
     });
-    // Returning the Output Object
     return output;
 };

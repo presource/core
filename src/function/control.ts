@@ -42,11 +42,15 @@ export const functionControl: FunctionControl = (callback: any) => {
 
     // Wrapped around the object proxy to intercept property access
     return objectProxy(handlerFunction, {
-        // Ensuring get is correctly — route property reads through the callback
+        // Routing property reads through the callback — except the excluded metadata keys
         get: ({ key }) => {
-            // Skip intercepting standard function metadata properties
-            // TODO: pending - Hard-coded excluded properties ['name','prototype','displayName']. Not configurable
+            // TODO: pending - Hard-coded excluded properties ['name','prototype','displayName'].
+            // Not configurable: `EXCLUDED_KEYS` above is a fixed module-level Set with no option
+            // to extend it, and assignments bypass the callback entirely (docs/issues/0011, P3).
             if (EXCLUDED_KEYS.has(key)) {
+                // Hand back `undefined` WITHOUT calling the callback: `objectProxy` returns the
+                // trigger result verbatim, so the read resolves to `undefined` instead of the
+                // function's real `name` / `prototype` / `displayName` value.
                 return;
             }
             return callback({ key });

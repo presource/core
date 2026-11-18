@@ -12,38 +12,41 @@ import { typeSwitch } from '../type';
 /**
  * Coerces any value into a plain object.
  *
- * Conversion rules:
+ * The buckets below are resolved by `typeSwitch`, i.e. by the value's constructor
+ * name - only a literal `{}` reaches the "object" bucket:
  * - **function**: Invoked recursively; the return value is coerced.
- * - **object**: Returned as-is.
+ * - **plain object**: Returned as-is (same reference, no clone).
  * - **array**: Converted to an object with numeric string keys (`"0"`, `"1"`, ...).
  * - **undefined**: Returns `{}`.
- * - **other primitives**: Wrapped as `{ [toString(value)]: value }`.
+ * - **everything else** (primitives, `null`, class instances, built-ins, prototype-less
+ *   objects): Wrapped as `{ [toString(value)]: value }`. A prototype-less object has no
+ *   constructor, so `typeSwitch` routes it to the "null" bucket and `toString` hands back
+ *   the `"null"` sentinel - the result is keyed `"null"`.
  *
  * @param unknown - The value to coerce. Defaults to `undefined`.
  * @returns A plain object representation of the input.
  */
 export const objectEnsures = (unknown?: any): { [key: string]: any } =>
-  // Looping through typeSwitch format
+  // Dispatch on the runtime type of `unknown`; each branch below is one conversion rule
   typeSwitch(unknown, {
-    // If Function is Passed
+    // If Function is Passed, invoke it and coerce whatever it returns
     function: () => objectEnsures(unknown()),
-    // If it is Object. it will return the object as it is
+    // If it is an Object, it is returned as it is
     object: () => unknown,
-    // If it is an array, it will reassigned key and value
+    // If it is an Array, re-index its entries onto object keys
     array: () => {
       const result: any = {};
       unknown.forEach((value: any, index: any) => {
-        // Reorganised array into object
+        // Array index becomes the object key
         result[index] = value;
       });
-      // Returning the Result
       return result;
     },
-    // If Undefined. it will return empty object
+    // If Undefined, return an empty object
     undefined: () => ({}),
-    // For Everything Else. Wrap the value as { [stringified]: value }
+    // For Everything Else, wrap the value as { [stringified]: value }
     default: () => ({
-      // Converting Unknown to String
+      // The stringified value doubles as the key
       [toString(unknown)]: unknown,
     }),
   });

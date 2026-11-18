@@ -4,12 +4,12 @@ import { jsonStringify } from '@presource/core';
 /**
  * src/json/index.ts barrel contract.
  *
- * Expected runtime surface, hand-derived from the four `export *` lines in
- * src/json/index.ts (lines 8-11) and the runtime exports of each source file:
- *   ./complete   -> jsonComplete   (src/json/complete.ts:31)
- *   ./stringify  -> jsonStringify  (src/json/stringify.ts:52)
- *   ./table      -> jsonTable      (src/json/table.ts:46)
- *   ./update     -> jsonUpdate     (src/json/update.ts:29)
+ * Expected runtime surface, hand-derived from the `export *` lines in
+ * src/json/index.ts and the runtime exports of each source file:
+ *   ./complete   -> jsonComplete   (src/json/complete.ts)
+ *   ./stringify  -> jsonStringify  (src/json/stringify.ts)
+ *   ./table      -> jsonTable      (src/json/table.ts)
+ *   ./update     -> jsonUpdate     (src/json/update.ts)
  *
  * `JsonTable` / `Configuration` (table.ts) are type-only.
  */

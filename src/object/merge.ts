@@ -23,11 +23,10 @@ import { objectEach } from './each';
  * @returns A new object containing the deep-merged result.
  */
 export const objectMerge = (...list: { [key: string]: any }[]): { [key: string]: any } => {
-    // Standard Result Object
+    // Accumulator: the merged result is always a brand new object; neither input is mutated
     const result: { [key: string]: any } = {};
-    // Scanning Through Array List
+    // Arguments are applied left to right, so a later item overwrites what earlier ones accumulated
     list.forEach((item) => {
-        // Scanning through each object
         objectEach(item, ({ key, value }) => {
             // Plain-object test. `isObject` (constructor === Object) is the same predicate the
             // previous `typeSwitch(value, { object })` dispatch selected, so arrays, class
@@ -36,15 +35,14 @@ export const objectMerge = (...list: { [key: string]: any }[]): { [key: string]:
                 // Get the Current Value once; the merge and the overwrite branch share it
                 const currentValue = result[key];
 
-                // Guard clause, if current value is not an object. Overwrite by reference,
-                // otherwise return the Combination of the two
+                // If the accumulated value is not a plain object there is nothing to merge into:
+                // overwrite by reference, otherwise deep-merge the two
                 result[key] = isObject(currentValue) ? objectMerge(currentValue, value) : value;
             } else {
-                // If not object. Overwrite
+                // Non-plain values replace wholesale, and the incoming reference is shared (no clone)
                 result[key] = value;
             }
         });
     });
-    // Returning the FInal result
     return result;
 };

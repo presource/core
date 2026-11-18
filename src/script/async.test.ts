@@ -133,7 +133,7 @@ describe('script async requirement', () => {
         });
 
         // `kickoff` finds zero pending tasks and resolves the drain signal at once
-        // (src/script/async.ts:146-155) — no timer involved, one microtask is enough
+        // (src/script/async.ts:154-163) — no timer involved, one microtask is enough
         await new Promise<void>((resolve) => setImmediate(resolve));
         expect(settled).toBe('resolved');
         expect(await first).toBeUndefined();
@@ -145,7 +145,7 @@ describe('script async requirement', () => {
     it('should not re-enter a task once the run is killed', async () => {
         // Task A always asks for a retry; task B succeeds and the guard then kills
         // the run, so A's scheduled retry is skipped by the `if (!killed)` gate
-        // (src/script/async.ts:135-138).
+        // (src/script/async.ts:138-146).
         const script = scriptAsync();
         const events: string[] = [];
         let retryCalls = 0;
@@ -188,7 +188,7 @@ describe('script async requirement', () => {
 
     it('should resolve before a slow task finishes when the run is killed', async () => {
         // The kill happens while task 1 is still awaiting: its continuation hits the
-        // `if (killed) return;` guard right after the callback (src/script/async.ts:111).
+        // `if (killed) return;` guard right after the callback (src/script/async.ts:114).
         const script = scriptAsync();
         const events: string[] = [];
 
@@ -251,7 +251,7 @@ describe('script async requirement', () => {
     });
 
     it('should cover checkDrained early return when killed flag is set', async () => {
-        // Covers src/script/async.ts:97 — `if (killed) return;` inside `checkDrained`.
+        // Covers src/script/async.ts:100 — `if (killed) return;` inside `checkDrained`.
         // Both tasks pass their own `killed` check while it is still false, then both
         // await the guard. The guard kills for the FIRST caller (which resolves the
         // drain signal) and lets the SECOND caller through, so that task falls all the
@@ -297,7 +297,7 @@ describe('script async requirement', () => {
     });
 
     it('should skip a stale retry whose task already completed (runTask pending guard)', async () => {
-        // Covers src/script/async.ts:105 — `if (killed || !task.flags.pending) return;`.
+        // Covers src/script/async.ts:108 — `if (killed || !task.flags.pending) return;`.
         // Two concurrent `process()` calls share one task list: the first call queues a
         // retry (setTimeout(0)) for task A, the second call runs A to completion
         // synchronously, so when the first call's retry re-enters `runTask`, A is no
@@ -352,10 +352,10 @@ describe('script async requirement', () => {
     });
 
     it('should leave the first run unsettled when a stale retry is its only task', async () => {
-        // Same pending-guard path as above (src/script/async.ts:105), but without any
+        // Same pending-guard path as above (src/script/async.ts:108), but without any
         // other in-flight task: the stale retry returns early WITHOUT notifying its own
         // drain signal, so the first `process()` promise never settles. Documented as-is
-        // (the drain notification for an early return is the gap, src/script/async.ts:105).
+        // (the drain notification for an early return is the gap, src/script/async.ts:108).
         const script = scriptAsync();
         const events: string[] = [];
         let calls = 0;
@@ -385,7 +385,7 @@ describe('script async requirement', () => {
 
     it('should not run tasks appended after process() has started', async () => {
         // `kickoff` snapshots the pending list synchronously, so a later append is
-        // invisible to the in-flight run (src/script/async.ts:146-157).
+        // invisible to the in-flight run (src/script/async.ts:154-165).
         const script = scriptAsync();
         let calls = 0;
 
@@ -503,7 +503,7 @@ describe('script async requirement', () => {
 
     it('should never settle and surface an escaping rejection as an unhandled rejection', async () => {
         // A task that rejects while pending escapes `await task.callback()`
-        // (src/script/async.ts:108): the `running--` and drain bookkeeping never run,
+        // (src/script/async.ts:111): the `running--` and drain bookkeeping never run,
         // so `process()` hangs and the error only shows up as an unhandled rejection.
         const script = scriptAsync();
         const events: string[] = [];
@@ -547,7 +547,7 @@ describe('script async requirement', () => {
     });
 
     it('should swallow a rejection that escapes the fire-and-forget retry path', async () => {
-        // The retry is invoked without awaiting (src/script/async.ts:136-137), so a
+        // The retry is invoked without awaiting (src/script/async.ts:145), so a
         // rejection from a retried pass is lost by the runner: the original task
         // promise already settled, but the drain still never fires because the retry
         // leaked its `running` increment.

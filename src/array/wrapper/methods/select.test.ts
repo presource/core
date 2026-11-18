@@ -4,9 +4,10 @@ import { arrayWrapper } from '@presource/core';
  * `select` contract (src/array/wrapper/methods/select.ts).
  *
  * `select` appends a predicate to `config.filter` and returns a NEW wrapper over
- * the SAME element array (select.ts:53-76). Only `number` and `array` requests
- * filter; every other request type hits typeSwitch `default: () => true`
- * (select.ts:71) — the documented current limitation, pinned exactly below.
+ * the SAME element array (`selectFunction` ends by calling the wrapper factory with the
+ * extended config). Only `number` and `array` requests
+ * filter; every other request type hits the outer `typeSwitch`'s `default: () => true`
+ * bucket — the documented current limitation, pinned exactly below.
  */
 describe('Array Wrapper Select Function', () => {
     const $array = arrayWrapper();
@@ -29,13 +30,14 @@ describe('Array Wrapper Select Function', () => {
         expect($array(sample).select([0, 0, 2]).get()).toStrictEqual(['apple', 'cat']);
         expect($array(sample).select([0, 2]).keys()).toStrictEqual([0, 2]);
         expect($array(sample).select([0, 2]).count()).toBe(2);
-        // Ten-plus elements keep ascending order (depends on the keys.ts:107 numeric comparator)
+        // Ten-plus elements keep ascending order (the order keys.ts's single ascending
+        // collection pass produces)
         const twelve = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
         expect($array(twelve).select([0, 10, 11]).get()).toStrictEqual([0, 10, 11]);
     });
 
     test('string, boolean and nullish requests apply no filtering', () => {
-        // select.ts:55 typeSwitch has no string/boolean/null case => default accepts everything
+        // `selectFunction`'s outer typeSwitch has no string/boolean/null case => default accepts everything
         expect($array(sample).select('all').get()).toStrictEqual(['apple', 'banana', 'cat', 'dog']);
         expect($array(sample).select('all').keys()).toStrictEqual([0, 1, 2, 3]);
         expect($array(sample).select(true).get()).toStrictEqual(['apple', 'banana', 'cat', 'dog']);
@@ -53,7 +55,7 @@ describe('Array Wrapper Select Function', () => {
 
     test('array request with string or boolean sub-criteria throws when read', () => {
         // The array branch reuses the sibling `string`/`boolean` handlers from the outer
-        // typeSwitch, which only declares `number`/`array`/`default` (select.ts:59-65),
+        // typeSwitch, which only declares `number`/`array`/`default`,
         // so a string/boolean criterion calls an undefined helper => TypeError.
         // The message is name-mangled by the transform, so only the error type is pinned.
         expect(() => $array(sample).select(['apple']).get()).toThrow(TypeError);
@@ -80,7 +82,7 @@ describe('Array Wrapper Select Function', () => {
     test('a derived wrapper does not corrupt the parent wrapper', () => {
         const parent = $array(sample);
         const derived = parent.select(1);
-        // The root config has no `filter` key, so select() builds a fresh array (select.ts:53)
+        // The root config has no `filter` key, so select()'s `config.filter || []` fallback builds a fresh array
         expect(derived.get()).toStrictEqual(['banana']);
         expect(parent.get()).toStrictEqual(['apple', 'banana', 'cat', 'dog']);
         expect(parent.keys()).toStrictEqual([0, 1, 2, 3]);
@@ -89,7 +91,7 @@ describe('Array Wrapper Select Function', () => {
     });
 
     test('a parent that already carries a filter array is shared with its children', () => {
-        // select.ts:53 reuses (does not clone) `config.filter`, so a child select()
+        // `selectFunction` reuses (does not clone) `config.filter`, so a child select()
         // pushes into the parent's array and narrows the parent as well.
         const parent = $array(sample).select(0);
         expect(parent.get()).toStrictEqual(['apple']);

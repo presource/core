@@ -10,13 +10,16 @@
 /** Optional input provided to {@link ScriptAsync.process}. */
 type Input = {
     /**
-     * Called after each successfully-completed task. Returning `false`
-     * aborts the entire process, marking all remaining tasks as skipped.
+     * Called after each successfully-completed task. Returning `false` kills the run:
+     * `process` resolves immediately and the tasks that never started stay flagged
+     * `pending` (nothing marks them skipped or failed).
      */
     shouldContinue?: () => Promise<boolean>;
 };
 
-// TODO: pending - Configs type is {} (unused). Remove or implement
+// TODO: pending - Configs type is {} (unused). Remove or implement. `configs` is still
+// part of the exported `ScriptAsync` signature and its `@param` below, and the parameter is
+// never read anywhere in the body, so removing it is a public-surface change (docs/issues/0011, P3).
 /** Configuration object for the async runner (reserved for future use). */
 type Configs = {};
 
@@ -133,7 +136,12 @@ export const scriptAsync: ScriptAsync = (configs = {}) => {
                     // Yield to the event loop so other tasks can progress before we retry
                     await new Promise<void>((resolve) => setTimeout(resolve, 0));
                     if (!killed) {
-                        // TODO: pending - BUG: runTask(task) is fire-and-forget. Errors from retry are silently lost. Should await or catch
+                        // TODO: pending - BUG (docs/issues/0001): the retry call is
+                        // fire-and-forget and its promise is discarded, and `runTask` has no
+                        // try/catch, so a rejection inside a retried task is reported nowhere:
+                        // `running` is never decremented for that attempt, the drain counter
+                        // never reaches zero, `process()` hangs on `await drained`, and the
+                        // failure surfaces only as an `unhandledRejection`.
                         runTask(task); // fire-and-forget retry
                     }
                     return;

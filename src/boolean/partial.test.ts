@@ -4,12 +4,13 @@ import { booleanPartialFalse, booleanPartialTrue } from '@presource/core';
  * Contract source: src/boolean/partial.ts (lines 23-36 / 46-60) driving src/boolean/cases.ts.
  *
  * Behaviour nailed down here:
- * - The nested-object rule (partial.ts:28 and partial.ts:52) is IDENTICAL in both helpers:
+ * - The nested-object rule (the `object:` branch of `booleanPartialTrue` and of
+ *   `booleanPartialFalse` in partial.ts) is IDENTICAL in both helpers:
  *   `booleanPartialTrue(nested)` is used for recursion and an EMPTY nested object is
  *   hard-coded to `true`. booleanPartialFalse therefore never recurses into itself -
  *   documented upstream by the TODO at partial.ts:51. Observable consequence:
  *   `booleanPartialFalse({ a: { b: true, c: true } })` is `false` (a truthy-looking nested
- *   value cannot be a "false" signal), even though the fix would make it `true`.
+ *   value cannot be a "false" signal), even though recursing into `booleanPartialFalse` instead would make it `true`.
  * - `booleanCases` short-circuits the walk as soon as the inner callback returns a
  *   non-undefined value, so the counters below prove the evaluation stops early.
  * - Leaves whose value is an array/date/instance are NOT treated as nested objects
@@ -19,11 +20,11 @@ describe('Testing booleanPartialTrue functionality', () => {
     test('Basic Usage', () => {
         expect(
             booleanPartialTrue({
-                a: 0, // Zero is consider as false.
-                b: '', // Empty string is consider as false
-                c: false, // false is false
-                d: null, //  null should also be false
-                e: undefined, // Same undefined
+                a: 0, // 0 is falsy
+                b: '', // An empty string is falsy
+                c: false, // false is falsy
+                d: null, // null is falsy too
+                e: undefined, // Same for undefined
             })
         ).toBe(false);
 
@@ -31,7 +32,7 @@ describe('Testing booleanPartialTrue functionality', () => {
             booleanPartialTrue({
                 a: 0,
                 b: 0,
-                c: 1, // At least one to be truth, for the whole evaluation to be true!
+                c: 1, // A single truthy leaf is enough to make the whole evaluation true!
                 d: 0,
                 e: 0,
             })
@@ -44,7 +45,7 @@ describe('Testing booleanPartialTrue functionality', () => {
                 a: false,
                 b: null,
                 c: undefined,
-                d: {}, // Empty object should be considered true
+                d: {}, // An empty nested object is hard-coded truthy
             })
         ).toBe(true);
 
@@ -54,7 +55,7 @@ describe('Testing booleanPartialTrue functionality', () => {
                 b: null,
                 c: undefined,
                 d: {
-                    1: undefined, // Children is undefined. Should be false
+                    1: undefined, // The only nested leaf is falsy, so the recursion returns false
                 },
             })
         ).toBe(false);
@@ -134,7 +135,7 @@ describe('Testing booleanPartialTrue functionality', () => {
 
 describe('booleanPartialFalse test', () => {
     test('Basic usage of booleanPartialFalse', () => {
-        // Expect Return to be True
+        // Every leaf here is falsy, so a falsy signal exists and the result is true
         expect(booleanPartialFalse({ a: 0, b: false, c: undefined, d: null })).toBe(true);
         expect(booleanPartialFalse({ a: 0, b: true, c: undefined, d: null })).toBe(true);
         expect(booleanPartialFalse({ a: 1, b: false, c: undefined, d: null })).toBe(true);

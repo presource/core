@@ -8,7 +8,8 @@
 
 /** Arguments passed to the `each` callback. */
 type Arguments<T, K extends keyof T> = {
-    /** Array of the object's keys. */
+    /** Snapshot of the object's own keys (`Object.keys`, taken once before iteration).
+     *  The declared type understates it: at runtime this is a `string[]`. */
     array: keyof T;
     /** Current property key. */
     key: K;
@@ -36,7 +37,8 @@ type Structure = <T extends {}, K extends keyof T>(object: T, callback: Callback
  *
  * @param object - The object to iterate.
  * @param callback - The per-property callback.
- * @returns An argument object with all property names.
+ * @returns The shared, mutable parameter object both `each` loops write into between
+ *          callback invocations.
  */
 const getParams: Structure = (object, callback) => {
     const array = Object.keys(object);
@@ -65,14 +67,14 @@ const getParams: Structure = (object, callback) => {
  */
 export const objectEach: Structure = (object, callback) => {
     const params = getParams(object, callback);
-    // Running Loop Function
+    // One shared params object drives the loop, so the callback sees index/value/length
     for (; params.index < params.length; params.index++) {
         params.key = params.array[params.index];
         params.value = params.object[params.key];
         params.result = callback(params);
         if (params.result !== undefined) break;
     }
-    // Always return the last result
+    // Whatever the callback last returned: the short-circuit value, or undefined
     return params.result;
 };
 
@@ -87,7 +89,6 @@ export const objectEach: Structure = (object, callback) => {
  * @returns The last callback return value, or `undefined` if none broke the loop.
  */
 export const objectEachAsync: Structure = async (object, callback) => {
-    // Get the params
     const params = getParams(object, callback);
     for (; params.index < params.length; params.index++) {
         params.key = params.array[params.index];

@@ -1,19 +1,19 @@
 import { loopUntil } from '@presource/core';
 
 describe('Until Loop (Basic)', () => {
-    // Basic While Looping
+    // Basic `loopUntil` looping
     test('Should loop until value = 5', () => {
         let value = 0;
         const targetedValue = 5;
 
         // Running Condition Check
         const condition = () => value === targetedValue;
-        // Continously Incrementing until Condition is Meet.
-        // Not that undefined will trigger break loop
+        // The body just increments; `undefined` is what keeps the loop going, and the
+        // condition stops it once the target is reached (a defined return would break instead).
         loopUntil(condition, () => {
             value++;
         });
-        // Expecting Value to be Targted Value
+        // The loop must land exactly on the target value
         expect(value).toBe(targetedValue);
     });
 
@@ -26,7 +26,7 @@ describe('Until Loop (Basic)', () => {
         expect(count).toBe(3);
     });
 
-    // CONTRACT: `loopUntil` has NO return statement (src/loop/until.ts:59-75 —
+    // CONTRACT: `loopUntil` has NO return statement (src/loop/until.ts:67-87 —
     // the break exits without a value), unlike `loopWhile` which returns
     // `params.result`. Even a callback that breaks with a value yields undefined.
     test('Always returns undefined, including when the callback breaks with a value', () => {
@@ -46,10 +46,11 @@ describe('Until Loop (Basic)', () => {
         expect(typeof result).toBe('undefined');
     });
 
-    // CONTRACT (verified against src/loop/until.ts:67): the condition is checked
+    // CONTRACT (verified against src/loop/until.ts:76): the condition is checked
     // in the `while` header BEFORE the first pass, so an already-true condition
-    // runs the body ZERO times. The JSDoc at src/loop/until.ts:50-52 claims the
-    // body "runs at least once" — the implementation contradicts that.
+    // runs the body ZERO times. The `loopUntil` JSDoc (src/loop/until.ts:49-66)
+    // documents that pre-check explicitly — it is `while (!condition)`, not
+    // `do … while (!condition)`.
     test('True up-front condition runs the body zero times (do-until JSDoc is wrong)', () => {
         const runs: string[] = [];
         let conditionCalls = 0;
@@ -70,7 +71,7 @@ describe('Until Loop (Basic)', () => {
     });
 
     // CONTRACT: both the condition and the callback receive the SAME mutable
-    // params record. Key order matches the object literal at src/loop/until.ts:60-65.
+    // params record. Key order matches the object literal at src/loop/until.ts:68-73.
     test('Condition and callback share one params record with the exact key set', () => {
         const conditionSnaps: Record<string, unknown>[] = [];
         const callbackSnaps: Record<string, unknown>[] = [];

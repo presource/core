@@ -34,7 +34,7 @@
  * The cycle check runs once per property. `ancestors.includes` is O(depth)
  * but is a tight pointer scan, while a `Set` mirror is O(1) per lookup and
  * pays a hash insert + delete per visited object. Measured on this
- * implementation (Temp/coding-datajson/bench-m9.mjs.ts):
+ * implementation in a dedicated benchmark harness:
  *
  *   - shallow + wide payloads (depth < 150, thousands of keys — the common
  *     case) run 20-40% SLOWER with an always-on Set,

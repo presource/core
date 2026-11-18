@@ -17,7 +17,8 @@ describe('Type Switch in Async format', () => {
 });
 
 describe('Type Switch Checking', () => {
-    // Checking if Type is Correct
+    // Every documented case key routes on the value's runtime type name, and a
+    // value with no matching key falls through to `default`.
     test('Checking type returned correctly', async () => {
         // Checking String Type
         expect(
@@ -36,25 +37,26 @@ describe('Type Switch Checking', () => {
             )
         ).toBe('a');
 
-        // Not Found. Undefined
+        // No `string` key is declared, so the unmatched value falls through to `default`
         expect(await typeSwitchAsync('a', { default: async ({ value }) => value })).toBe('a');
     });
 
-    // Checking the nested type are correct
+    // Each case below dispatches on the runtime type name of the value and asserts
+    // the matched handler is handed that exact value. Handlers may be async or sync.
     test('Checking nested type are correct', async () => {
-        // Checking String
+        // A string primitive routes to the `string` case
         await typeSwitchAsync('string', {
             string: async ({ value }) => {
                 expect(value).toBe('string');
             }
         });
-        // Checking for Number
+        // A number primitive routes to the `number` case
         await typeSwitchAsync(10, {
             number: async ({ value }) => {
                 expect(value).toBe(10);
             }
         });
-        // Checking for Boolean
+        // Both boolean literals route to the `boolean` case (sync handlers here)
         await typeSwitchAsync(true, {
             boolean: ({ value }) => {
                 expect(value).toBe(true);
@@ -66,7 +68,7 @@ describe('Type Switch Checking', () => {
             }
         });
 
-        // Checking for Function
+        // A function value routes to the `function` case (compared by identity)
         const func = () => {};
         await typeSwitchAsync(func, {
             function: ({ value }) => {
@@ -76,7 +78,8 @@ describe('Type Switch Checking', () => {
     });
 
     test('Number route switching', async () => {
-        // Number switching route
+        // The `number` helper reached from the `string` handler re-dispatches 5 into
+        // the `number` case, which returns it
         expect(
             await typeSwitchAsync('string', {
                 number: ({ value }) => value,
@@ -84,7 +87,8 @@ describe('Type Switch Checking', () => {
             })
         ).toBe(5);
 
-        // Route using the full nested callback name
+        // A repeat of the case above: the nested helper is always named by its declared
+        // case key, so there is no separate short-form spelling to contrast with.
         expect(
             await typeSwitchAsync('string', {
                 number: ({ value }) => value,
@@ -93,9 +97,9 @@ describe('Type Switch Checking', () => {
         ).toBe(5);
     });
 
-    // Switching Routs
+    // Switching routes
     test('Boolean route switching', async () => {
-        // Boolean route switching
+        // The `boolean` helper re-dispatches `true` into the `boolean` case
         expect(
             await typeSwitchAsync('string', {
                 boolean: ({ value }) => value,
@@ -103,7 +107,7 @@ describe('Type Switch Checking', () => {
             })
         ).toBe(true);
 
-        // Boolean route switching using the full nested callback name
+        // Same route, opposite literal: the helper forwards `false` instead of `true`
         expect(
             await typeSwitchAsync('string', {
                 boolean: ({ value }) => value,
@@ -306,14 +310,14 @@ describe('Type Switch Checking', () => {
 });
 
 /**
- * Perf-wave contract pins for the async dispatcher (T-A).
+ * Perf-wave contract pins for the async dispatcher.
  *
  * Mirrors the sync contract: the args object is built eagerly (one ASYNC closure
  * per own enumerable case key, `value` first), the nested helpers still return
  * promises, and a non-callable nested case still rejects with the exact
  * `caseHandler is not a function` TypeError. Verified byte-for-byte against the
- * git HEAD async implementation by the 480-check legacy/current fingerprint parity
- * run and the cumulative mutation probes in Temp/coding-dispatch.
+ * previous async implementation by the 480-check legacy/current fingerprint parity
+ * run and the cumulative mutation probes from that same verification.
  */
 describe('Type Switch Async Args Shape And Dispatch Side Effects', () => {
     test('Awaited handler receives the same eager args shape', async () => {

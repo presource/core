@@ -207,7 +207,7 @@ describe('functionOptions requirements', () => {
     });
 
     // ------------------------------------------------------------------
-    // G10 PINNED CONTRACT — option keys that collide with the handler's OWN
+    // Pinned contract — option keys that collide with the handler's OWN
     // Function properties. The options are seeded with `Object.assign(handler, options)`
     // (src/function/options.ts, construction path). `name` and `length` are own,
     // non-writable data properties of a function object, so the strict-mode [[Set]]
@@ -239,9 +239,9 @@ describe('functionOptions requirements', () => {
     });
 
     // ------------------------------------------------------------------
-    // G10 PINNED CONTRACT — proxy `get` metadata passthrough (src/function/options.ts
-    // get trigger): a truthy `currentObject[key]` is returned verbatim, so built-in
-    // function metadata leaks through for keys the options set does not define.
+    // Pinned contract — proxy `get` metadata passthrough (the `get` trigger in
+    // src/function/options.ts): a truthy `currentObject[key]` is returned verbatim, so
+    // built-in function metadata leaks through for keys the options set does not define.
     // Both truthy metadata and absent keys are pinned, because an absent key falls
     // through to the (missing) parent lookup and yields `undefined`.
     // ------------------------------------------------------------------

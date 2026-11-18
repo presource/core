@@ -22,9 +22,11 @@ import { objectUpdate } from '../object';
  * instead of being swallowed or dropped into `process` as an unhandled rejection.
  */
 type ListenerHandler = {
-    // Trigger on every time a function is executed
+    // Fires once per executed item — including a rejected async item (see the payload note above)
     execute?: (data: any) => any;
-    // Trigger every time function is completed
+    // Fires when the queue drains. A deferred `processQueue` that finds an empty queue
+    // fires it again (pinned in src/function/queue.test.ts, 'done completes the queue
+    // immediately'), and `done()` fires it directly right after clearing the queue.
     complete?: (data: any) => any;
 };
 
@@ -37,8 +39,9 @@ type Arguments = {
 type CallbackFunction = (args: Arguments) => any;
 
 /**
- * The queue accessor — call it to add items, or use `.kill()` / `.done()`
- * to clear or force-complete the queue.
+ * The queue accessor — a callback enqueues; NO arguments reads the live internal
+ * memory (`{ queue, on }`); `.kill()` / `.done()` clear or force-complete it. The
+ * runtime allows that no-arg read, which the call signature below does not declare.
  */
 type QueueFunction = {
     (callback: CallbackFunction): any;
@@ -52,7 +55,7 @@ type QueueFunction = {
  * a `delay` property to postpone their execution. The `busy` flag prevents
  * concurrent processing.
  *
- * ASYNC REJECTIONS (defect G1): an item whose promise rejects is treated as a
+ * ASYNC REJECTIONS: an item whose promise rejects is treated as a
  * finished item. The queue releases `busy`, reports the failure through the
  * `execute` listener as `{ queue, response: undefined, error }` (see
  * {@link ListenerHandler}), and keeps draining the remaining items. The reason
@@ -101,16 +104,21 @@ export const functionQueue = (listener: ListenerHandler = {}): QueueFunction => 
             const { delay } = queue[0];
 
             // Triggering Function in Delay Mode
-            // This allowed queueing lots of function before the first one get executed
+            // The zero/`delay` timer is what lets a whole batch be enqueued before the
+            // first item runs: `processQueue` only reaches the item on the next tick.
             functionDelay(() => {
                 // Get the Script
                 const callback: any = queue.shift();
-                // Set the pointer to 0. This allow queue to be add immediately at beginning
+                // Set the pointer to 0 — after the shift, the next enqueue splices at the
+                // front of what is left, which is how an item's own children run first.
                 pointer = 0;
 
                 // Script Must be Valid
                 if (callback) {
-                    // Getting the Response
+                    // Getting the Response. The item is handed `{ queue, current }`: the
+                    // accessor itself plus the item being run. Note the local `Arguments`
+                    // type only declares `queue`, so `current` is undocumented surface
+                    // (reported, not changed here).
                     const response = callback({ queue: accessorFunction, current: callback });
                     // If response is valid, and it is a promise
                     if (response && isPromise(response)) {
@@ -138,7 +146,8 @@ export const functionQueue = (listener: ListenerHandler = {}): QueueFunction => 
         } else {
             // There is no more queue item left
             functionDelay(() => {
-                // Trigger complete. This involve clearing the queue as well
+                // Trigger complete — `completeScriptObject` clears the queue first,
+                // then fires the `complete` listener (when one was registered).
                 completeScriptObject(memory);
             });
         }
@@ -146,8 +155,14 @@ export const functionQueue = (listener: ListenerHandler = {}): QueueFunction => 
 
     // The Accessor Function — adds items to the queue or returns internal memory
     const accessorFunction: any = (script?: any): any => {
-        // Return the Memory Object
-        // TODO: pending - return memory exposes mutable internal state to callers
+        // Return the Memory Object.
+        // TODO: pending - calling the accessor with NO arguments returns the LIVE internal
+        // memory object (`{ queue, on }`), not a copy: callers can read and mutate
+        // `memory.queue` directly (unshift / push / truncating `length`) and the processor
+        // honours those edits, because `processQueue` reads the same array on every pass.
+        // Kept as a marker only for traceability (docs/issues/0011 inventory): the exposure
+        // is deliberate — docs/issues/0002 keeps it and the tests rely on it (`scriptChain`
+        // only ever uses the enqueue form) — so this is a decided contract, not open work.
         if (script === undefined) return memory;
         // Adding Queue To List — splice at pointer so new items slot in ahead of later ones
         memory.queue.splice(pointer, 0, script);

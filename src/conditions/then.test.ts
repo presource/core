@@ -1,7 +1,7 @@
 import { ifThen } from '@presource/core';
 
 /**
- * Contract source: src/conditions/then.ts (lines 30-41) —
+ * Contract source: src/conditions/then.ts (lines 30-48) —
  * `if (!condition({ callback })) return; return callback({ condition });`
  * (a guard-clause rewrite of the previous one-liner; identical dispatch order).
  *

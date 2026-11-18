@@ -8,7 +8,7 @@ describe('Object Alias Test', () => {
             length: 3
         };
 
-        // Creating an alias object with the follow abreviations
+        // Creating an alias object with the following abbreviations
         const alias = objectAlias(data, {
             i: 'index',
             c: 'count',
@@ -45,9 +45,9 @@ describe('Object Alias Test', () => {
     });
 
     // ----------------------------------------------------------------------------------------
-    // Edge cases. Contract source: src/object/alias.ts:35-57 - the alias map is snapshotted into
-    // a prototype-less copy once per call and `getActualKey = aliasMap[key] || key` (alias.ts:48),
-    // on top of src/object/proxy.ts get/set traps. Verified against the built runtime (Temp probes).
+    // Edge cases. Contract source: `objectAlias` in src/object/alias.ts - the alias map is
+    // snapshotted into a prototype-less copy once per call, and `getActualKey` resolves with
+    // `aliasMap[key] || key`, on top of the get/set traps in src/object/proxy.ts.
     // ----------------------------------------------------------------------------------------
 
     test('alias reads forward to the real key and stay live', () => {
@@ -94,7 +94,7 @@ describe('Object Alias Test', () => {
     });
 
     test('alias whose target is an empty string resolves back to the accessed key', () => {
-        // alias.ts:48 uses `||`, so the falsy '' target is discarded and `key` is returned
+        // `getActualKey` uses `||`, so the falsy '' target is discarded and `key` is returned
         const data = { existing: 'kept' };
         const alias = objectAlias(data, { existing: '' });
         expect(alias.existing).toBe('kept');
@@ -225,7 +225,7 @@ describe('Object Alias Test', () => {
 
     test('a null alias map throws at construction', () => {
         // alias.ts snapshots with `Object.keys(alias)`, so an invalid map now fails eagerly at
-        // construction. HEAD only failed later: the traps read `alias[key]` live, so the same
+        // construction. The previous implementation only failed later: the traps read `alias[key]` live, so the same
         // TypeError surfaced on the first proxied get/set instead.
         expect(() => objectAlias({ a: 1 }, null as any)).toThrow(TypeError);
         expect(() => objectAlias({ a: 1 }, null as any)).toThrow('Cannot convert undefined or null to object');

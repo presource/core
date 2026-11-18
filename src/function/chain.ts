@@ -20,7 +20,7 @@ type Data = {
     params: any[];
 };
 
-// The That Pass into Callback
+// Callback the chain proxy hands over — fires only on `call` and deferred `.get` (never `set`)
 type Callback = (data: Data) => any;
 
 /** Return type: both callable and indexable to support fluent chaining. */
@@ -80,12 +80,14 @@ export const functionChain: FunctionChain = (callback) => {
                     chain.push(key!);
                 }
 
-                // If there is a pending deferred callback from a prior `.get`, and the
-                // index has advanced, fire the pending callback so the user gets the intermediate state.
+                // Deferred `.get` records fire here only when the index has advanced; a record
+                // whose index is unchanged is dropped by the `pending = null` reset below.
                 if (pending && index !== pending.index) {
-                    // Trigger only if index and pendingIndex is different
+                    // Fire the deferred callback with the current call's `params` — the `.get`
+                    // path below invokes the same callback with no arguments instead.
                     pending.callback(params);
-                    // Else Triggering the result
+                    // The user callback for this step still runs below, and the `pending = null`
+                    // reset after it means a deferred record can never fire twice.
                 }
 
                 // Passing the parameter — fire the user callback with current chain state
@@ -119,6 +121,6 @@ export const functionChain: FunctionChain = (callback) => {
         });
     });
 
-    // Returnin the Chain Function
+    // Returning the Chain Function
     return chainFunction as ReturnFunction;
 };

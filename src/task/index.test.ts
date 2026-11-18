@@ -5,8 +5,9 @@ import { taskCompletion } from '@presource/core';
  * src/task/index.ts barrel contract.
  *
  * Expected runtime surface, hand-derived from the single `export *` line in
- * src/task/index.ts (line 7): taskCompletion (src/task/completion.ts:28).
- * `normalizeThreadCount` (completion.ts:21) is a module-private helper and is NOT
+ * src/task/index.ts (line 7): taskCompletion (src/task/completion.ts:35).
+ * `normalizeThreadCount` (the module-private helper above `taskCompletion` in
+ * src/task/completion.ts) is NOT
  * exported, so it must not appear in the runtime key list.
  */
 const EXPECTED_EXPORTS = ['taskCompletion'];
@@ -44,8 +45,9 @@ describe('task barrel (src/task/index.ts)', () => {
     });
 
     test('a non-positive threadCount is clamped to 1 so completion cannot deadlock', async () => {
-        // completion.ts:21-25 clamps 0 / NaN / negative values; without it the dequeue
-        // loop would never start a task and completion() would hang forever.
+        // The `normalizeThreadCount` guard in completion.ts:24-33 clamps 0 / NaN /
+        // negative values; without it the dequeue loop would never start a task and
+        // completion() would hang forever.
         const ran: string[] = [];
         const { add, completion } = taskModule.taskCompletion(0);
         add(async () => { ran.push('done'); });

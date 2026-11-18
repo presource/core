@@ -1,16 +1,16 @@
 import { stringIncludes } from '@presource/core';
 
 /**
- * Contract source: src/string/includes.ts (lines 54-68).
+ * Contract source: the `stringIncludes` export of src/string/includes.ts (and its `toDelegate` mapper).
  *
  * Behaviour nailed down here:
  * - Keys are iterated with `objectEach` (own enumerable keys only) and coerced
- *   with `key.toString()` before `String.prototype.includes` (line 62-63), so a
+ *   with `key.toString()` before `String.prototype.includes`, so a
  *   numeric case key `{ 12: true }` reports the matched key as the string `'12'`.
  * - Unmatched keys are ABSENT from the result (never `undefined` valued).
- * - Callbacks receive `{ value, ...params }` where `params` is `objectMap(cases, ...)`:
- *   every case key is present, function values are passed through RAW (includes.ts:59)
- *   and non-function values become `() => caseValue`.
+ * - Callbacks receive `{ value, ...params }` where `params` is `objectMap(cases, toDelegate)`:
+ *   every case key is present, function values are passed through RAW (`toDelegate` hands them
+ *   back untouched) and non-function values become `() => caseValue`.
  * - Because the spread comes after `value`, a case literally keyed `value` overwrites it.
  * - Non-object `cases` still iterate (`Object.keys('b') === ['0']`), which simply matches nothing.
  */
@@ -30,7 +30,7 @@ describe('stringIncludes', () => {
 
         const found = stringIncludes('inline outline', cases);
 
-        // Checking if it is passing through the values
+        // Both callbacks ran, in the cases map's own-enumerable-key iteration order
         expect(result).toStrictEqual(['inline', 'outline']);
         // Both keys matched, both callbacks returned undefined, so the keys exist with undefined values
         expect(found).toStrictEqual({ inline: undefined, outline: undefined });
@@ -38,7 +38,7 @@ describe('stringIncludes', () => {
 
     test('nested callback functions', () => {
         const value = 'inline dense';
-        // The Result
+        // Only 'inline' and 'dense' are substrings of the target; 'flex'/'column' are reachable only through the callback's params
         const result = stringIncludes(value, {
             inline: () => 'inline',
             flex: () => 'flex',
@@ -88,7 +88,7 @@ describe('stringIncludes', () => {
         const result = stringIncludes('ab', { a: null, b: undefined });
         const mixed = stringIncludes('ab', { a: object, b: array });
 
-        // `found[k] = caseValue` (includes.ts:64) - the key exists even when the value is undefined
+        // `found[k] = caseValue` (includes.ts:91) - the key exists even when the value is undefined
         expect(result).toStrictEqual({ a: null, b: undefined });
         expect(Object.keys(result)).toStrictEqual(['a', 'b']);
         expect(mixed).toStrictEqual({ a: { obj: 1 }, b: [1, 2] });
@@ -123,7 +123,7 @@ describe('stringIncludes', () => {
     });
 
     test('null or undefined cases throw while building the parameter map', () => {
-        // objectEach -> Object.keys(null) throws before any matching happens (includes.ts:59)
+        // objectEach -> Object.keys(null) throws before any matching happens (the loop at includes.ts:84)
         expect(() => stringIncludes('abc', undefined as any)).toThrow(TypeError);
         expect(() => stringIncludes('abc', null as any)).toThrow(TypeError);
     });
@@ -145,10 +145,10 @@ describe('stringIncludes', () => {
 
         const result = stringIncludes('ab', cases);
 
-        // `value` first, then every case key in insertion order (includes.ts:64 spread)
+        // `value` first, then every case key in `Object.keys` order (the `{ value, ...params }` spread at includes.ts:91)
         expect(Object.keys(received)).toStrictEqual(['value', 'a', 'b', 'zz']);
         expect(received.value).toBe('ab');
-        // Function cases are handed through raw (includes.ts:59 keeps the original reference)
+        // Function cases are handed through raw (`toDelegate` keeps the original reference)
         expect(received.a).toBe(cases.a);
         expect(received.b).toBe(cases.b);
         expect(received.zz).toBe(cases.zz);
@@ -214,11 +214,11 @@ describe('stringIncludes', () => {
 });
 
 /**
- * G13 pin: the runtime is responsible for the non-string-target failures (T-A).
+ * Pin: the non-string-target failures belong to the runtime, not to the delegation change.
  *
  * `stringIncludes` never coerces or type-checks `value`; the throw comes from
- * `value.includes(key)` inside the `objectEach` callback (includes.ts:77 in the
- * pre-optimisation build). Behaviour is EXACTLY as it was before the delegation map
+ * `value.includes(key)` inside the `objectEach` callback (includes.ts:86).
+ * Behaviour is EXACTLY as it was before the delegation map
  * became lazy - the map is side-effect-free, so building it earlier or later cannot
  * change what a non-string target does. Pinned per target:
  * - number / boolean / symbol / object targets -> `value.includes is not a function`
@@ -250,9 +250,9 @@ describe('stringIncludes non-string target behaviour (G13)', () => {
 });
 
 /**
- * Perf-wave contract pins for the lazy delegation map (T-A).
+ * Contract pins for the lazy delegation map.
  *
- * The `objectMap(cases, ...)` result is now built on the FIRST match instead of up
+ * The `objectMap(cases, toDelegate)` result is built on the FIRST match instead of up
  * front, which is the entire saving for the no-match case (measured 4.36x) and
  * provably invisible when something matches: the callback argument is still
  * `{ value, ...params }` with the same keys, ordering, RAW function passthrough and

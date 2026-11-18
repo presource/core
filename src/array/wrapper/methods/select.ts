@@ -1,8 +1,9 @@
 /**
  * Wrapper `select` method implementation.
  *
- * Filters the wrapped array by appending a new predicate to the
- * configuration, returning a new wrapper instance for chaining.
+ * Appends a new predicate to the wrapper configuration so that later reads see only the
+ * matching elements. The array itself is never filtered in place; a new wrapper instance is
+ * returned for chaining.
  */
 
 import { Params } from '..';
@@ -10,7 +11,11 @@ import { arrayEach } from '../../each';
 import { typeSwitch } from '../../../type';
 
 
-// TODO: pending - null and undefined in Possible type but unhandled in typeSwitch
+// TODO: pending - `Possible` declares string/boolean/null/undefined and `Request` also allows a
+// callback, but this dispatch only handles `number` and `array`: every other request falls through
+// `typeSwitch`'s `default` and matches every element, and a string/boolean criterion inside an
+// array request throws `TypeError` once the filter is evaluated (the outer case map declares no
+// string/boolean entry, so the delegated helpers it destructures are undefined).
 /** Primitive and nullish types accepted as filter values. */
 type Possible = string | boolean | number | null | undefined;
 
@@ -41,9 +46,13 @@ type SelectFunction = (params: Params, request: Request) => any;
  * The filter is appended to the existing config filters, so multiple
  * `select` calls compose. Does not mutate the underlying array.
  *
+ * In practice only `number` (match by index) and `array` requests narrow the population:
+ * every other request type — including a callback — falls through to `default: () => true`
+ * and keeps every element (see the note above `Possible`).
+ *
  * @param params - The wrapper parameter object.
  * @param request - The filter criteria: a value, array of values, or callback.
- * @returns A new wrapper instance with the additional filter applied.
+ * @returns A new wrapper instance over the SAME element array, with the extra filter applied.
  */
 export const selectFunction: SelectFunction = (params, request) => {
     const { wrapper, element, config } = params;

@@ -14,11 +14,11 @@ import { booleanTrue } from '@presource/core';
  */
 describe('Testing booleanTrue function', () => {
     test('Basic Usage', () => {
-        // Expect Everything to Return True
+        // Nothing refutes the initial `true`: every case evaluates truthy
         expect(
             booleanTrue({
                 a: 1,
-                b: {}, // Object is Special. Since it is an empty object, it should consider to be true
+                b: {}, // `{}` recurses into an empty accumulator object, which is itself truthy
                 c: [],
                 d: () => 1,
             })
@@ -28,15 +28,15 @@ describe('Testing booleanTrue function', () => {
             booleanTrue({
                 a: 1,
                 b: 2,
-                c: 0, // This will return false, making the whole argument false.
+                c: 0, // A falsy leaf short-circuits the walk, so the whole evaluation is false.
                 d: 4,
             })
         ).toBe(false);
     });
 
     test('Advance Usage', () => {
-        // Nested Expression via Object
-        // True Test
+        // Nested objects, evaluated through the booleanCases recursion
+        // Every nested leaf is truthy, so the nested accumulator object comes back truthy
         expect(
             booleanTrue({
                 simple: 1,
@@ -49,15 +49,15 @@ describe('Testing booleanTrue function', () => {
             })
         ).toBe(true);
 
-        // False Test
+        // A falsy nested leaf makes the whole evaluation false
         expect(
             booleanTrue({
                 simple: 1,
                 function: () => 2,
                 nested: {
                     a: 1,
-                    b: undefined, // This should trigger everything to be false!
-                    c: false, // This should trigger everything to be false!
+                    b: undefined, // The first falsy leaf stops the nested walk
+                    c: false, // Never evaluated: 'b' already short-circuited the nested walk
                 },
             })
         ).toBe(false);

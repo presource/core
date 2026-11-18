@@ -2,10 +2,11 @@
  * Asynchronous type-switch utility.
  *
  * Inspects the runtime type of a value and dispatches to a matching
- * case callback. Each callback also receives helper methods (e.g.
- * `args.number()`, `args.N()`) so a matched handler can further
- * delegate based on nested types. This is the async counterpart of
- * {@link typeSwitch}.
+ * case callback. Each callback also receives one nested-delegation helper
+ * PER DECLARED CASE KEY of `cases` (declaring a `number` case adds
+ * `args.number()`; there are no built-in or short-form aliases), so a
+ * matched handler can re-dispatch another value into any case handler it
+ * declared. This is the async counterpart of {@link typeSwitch}.
  *
  * PERF NOTES: same measurements as ./switch.ts (lazy accessor / lazy-proxy args
  * are slower than this eager build; a non-callable case returns without building
@@ -48,32 +49,28 @@ type Cases<T> = {
  * Nested delegation helpers injected into each case callback's `args`.
  * Each property is an async callback that, when called, will dispatch
  * to the corresponding case handler with the provided value.
+ *
+ * As in ./switch.ts, the declared keys below are the documented set only: at
+ * runtime the injected helpers are exactly `Object.keys(cases)` (pinned in
+ * src/type/switchAsync.test.ts).
  */
 type Nested = {
-  // Callback have these function
   default: Callback;
 
-  // Number callback
   number: Callback;
 
-  // String callback
   string: Callback;
 
-  // Boolean Callback
   boolean: Callback;
 
-  // Object callback
   object: Callback;
 
-  // Undefined
   undefined: Callback;
 
   null: Callback;
 
-  // Array Callback
   array: Callback;
 
-  // Function callback
   function: Callback;
 };
 

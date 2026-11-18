@@ -2,6 +2,9 @@
  * Object utility module.
  *
  * Barrel file that re-exports every object-related utility from this package.
+ * `./constant` is the one module not re-exported here: `ObjectConstant` is a type-only
+ * export, so it never reaches the runtime surface (asserted by the object barrel tests),
+ * and each consumer imports it directly from `./constant`.
  */
 export * from './alias';
 export * from './create';

@@ -41,7 +41,7 @@ describe('Each function of array Wrapper', () => {
         $array(sample).each((data: any) => {
             references.push(data);
         });
-        // arrayEach builds the params object once (arrayEach.ts:55-63) and reuses it
+        // arrayEach builds the params object once (`getParams` in src/array/each.ts) and reuses it
         expect(references.length).toBe(3);
         expect(references[0]).toBe(references[1]);
         expect(references[1]).toBe(references[2]);

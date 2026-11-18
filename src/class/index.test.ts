@@ -6,8 +6,8 @@ import { classConstructor, classCreate } from '@presource/core';
  *
  * Expected runtime surface, hand-derived from the two `export *` lines in
  * src/class/index.ts (lines 1-2) and the runtime exports of each source file:
- *   ./constructor -> classConstructor  (src/class/constructor.ts:4)
- *   ./create      -> classCreate       (src/class/create.ts:7)
+ *   ./constructor -> classConstructor  (src/class/constructor.ts:24)
+ *   ./create      -> classCreate       (src/class/create.ts:28)
  *
  * NOTE: the `ClassConstructor`/`ClassCreate` signature types in those files are declared
  * locally WITHOUT the `export` keyword, so they are not part of the public surface at

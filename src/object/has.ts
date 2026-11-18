@@ -5,7 +5,10 @@
  */
 
 /**
- * Type-guard that checks whether `object` has `key` as an own enumerable property.
+ * Type-guard that checks whether `object` has `key` as an own (non-inherited) property.
+ *
+ * Enumerability is NOT part of the test: `hasOwnProperty` also answers `true` for a
+ * non-enumerable own property, and inherited keys never match.
  *
  * @typeParam T - The type of the object.
  * @param object - The object to check.

@@ -1,6 +1,6 @@
 import { loopFor, loopForAsync } from '@presource/core';
 
-// These are basic cases loopFor
+// Basic `loopFor` / `loopForAsync` cases
 describe('For Loop (Basic)', () => {
     test('Should loop until the end', () => {
         let count = 0;
@@ -24,7 +24,7 @@ describe('For Loop (Basic)', () => {
 
     // CONTRACT: one mutable record object is handed to every iteration, so the
     // exact counter values observed inside the callback are the contract.
-    // Implementation: src/loop/for.ts:90-99 (`record.result = callback(record)`
+    // Implementation: src/loop/for.ts:96-105 (`record.result = callback(record)`
     // then `record.index++; record.count++;`).
     test('Params record identity is stable and carries the exact counters', () => {
         const seen: unknown[] = [];
@@ -48,7 +48,7 @@ describe('For Loop (Basic)', () => {
         // Same object reference for all three iterations (index/count mutate in place)
         expect(seen[1]).toBe(seen[0]);
         expect(seen[2]).toBe(seen[0]);
-        // `callback` is echoed back on the params object (src/loop/for.ts:61-76)
+        // `callback` is echoed back on the params object (src/loop/for.ts:66-81)
         expect(snapshots).toStrictEqual([
             { index: 0, count: 0, length: 3, result: undefined, callback },
             { index: 1, count: 1, length: 3, result: undefined, callback },
@@ -80,7 +80,7 @@ describe('For Loop (Basic)', () => {
             runs.push('body');
             return undefined;
         });
-        // `while (record.index < record.length)` -> 0 < 0 is false (src/loop/for.ts:92)
+        // `while (record.index < record.length)` -> 0 < 0 is false (src/loop/for.ts:98)
         expect(runs).toStrictEqual([]);
         expect(result).toBeUndefined();
     });
@@ -166,7 +166,7 @@ describe('For Loop (Basic)', () => {
     });
 
     // Every value that is not `undefined` — including every falsy one — is the
-    // success signal and is returned verbatim (src/loop/for.ts:94).
+    // success signal and is returned verbatim (src/loop/for.ts:100).
     test.each([0, false, '', null, NaN] as const)('Falsy-but-defined return %p breaks and is returned verbatim', (haltValue) => {
         const indices: number[] = [];
 
@@ -180,10 +180,11 @@ describe('For Loop (Basic)', () => {
     });
 
     // ------------------------------------------------------------------
-    // G20 PINNED CONTRACT — degenerate counts. The guard is `record.index < record.length`
-    // (src/loop/for.ts:92) starting from `index = 0`, so a negative length is simply
-    // never satisfied and `NaN` makes the comparison `false` outright. Both run the body
-    // zero times and return `record.result`, which stays at its initial `undefined`.
+    // Pinned contract — degenerate counts. The guard is `record.index < record.length`
+    // at the top of `loopFor` (src/loop/for.ts), starting from `index = 0`, so a negative
+    // length is simply never satisfied and `NaN` makes the comparison `false` outright.
+    // Both run the body zero times and return `record.result`, which stays at its initial
+    // `undefined`.
     // ------------------------------------------------------------------
     test.each([-3, NaN])('Length %p never runs the body and returns undefined', (length) => {
         const runs: number[] = [];
@@ -213,7 +214,7 @@ describe('For Loop (Basic)', () => {
     });
 });
 
-// These are advance cases.
+// Advanced cases: re-entrant callbacks and degenerate counts.
 describe('Loop For (Advance)', () => {
     test('Loop break prematurely due to re-nesting', () => {
         let count = 0;
@@ -291,7 +292,7 @@ describe('Loop For Async Usage', () => {
     });
 
     // CONTRACT: the async loop `await`s every callback before the next pass, so
-    // start/end markers strictly interleave per iteration (src/loop/for.ts:129-137).
+    // start/end markers strictly interleave per iteration (src/loop/for.ts:135-143).
     test('Awaits callbacks sequentially and reuses one params record', async () => {
         const order: string[] = [];
         const seen: unknown[] = [];
@@ -385,8 +386,8 @@ describe('Loop For Async Usage', () => {
         expect(result).toBe('stop');
     });
 
-    // CONTRACT: async parity with the sync loop (G20) — negative and NaN counts fail the
-    // `record.index < record.length` guard outright (src/loop/for.ts:131), so the body
+    // CONTRACT: async parity with the sync loop — negative and NaN counts fail the
+    // `record.index < record.length` guard outright (src/loop/for.ts:137), so the body
     // never runs and the promise resolves with the untouched initial `record.result`.
     test.each([-3, NaN])('Async length %p never runs the body and resolves undefined', async (length) => {
         const callback = vi.fn(() => undefined);

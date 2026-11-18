@@ -9,9 +9,9 @@ import { functionState } from '@presource/core';
  * dependencies. Writes only re-run dependents while `values[index] !== value`,
  * which is reference equality.
  *
- * COVERAGE NOTE (state.ts:41-51): the `triggers[triggerIndex] || {}` fallback that used to
+ * DEAD-CODE NOTE (state.ts:41-51): the `triggers[triggerIndex] || {}` fallback that used to
  * sit here was unreachable dead code and has been removed. Every stack entry is pushed as a
- * fresh `[]` (state.ts:100) and re-assigned from `triggers[triggerIndex] = trigger`, so with
+ * fresh `[]` (state.ts:107) and re-assigned from `triggers[triggerIndex] = trigger`, so with
  * `triggers.length > 0` the last element is always a truthy array. The only live guard is the
  * outer `if (triggers.length)` at state.ts:41 — top level reads run with an empty stack and
  * record nothing (pinned by the last test).
@@ -310,8 +310,8 @@ describe('Funtion State Test - Design for Reactivity', () => {
             return 1;
         });
 
-        // Top level reads run with an empty `triggers` stack: `triggered` returns
-        // without writing, and the `|| {}` fallback on state.ts:43 is skipped
+        // Top level reads run with an empty `triggers` stack, so `triggered` returns at the
+        // `triggers.length` guard without writing anything into the dependency records.
         expect(apple()).toBe(0);
         apple(1);
         apple(2);
@@ -321,6 +321,9 @@ describe('Funtion State Test - Design for Reactivity', () => {
         expect(runs).toBe(2);
     });
 
+    // Commented out because async state slots are unimplemented — an async slot's value is
+    // a fresh Promise on every run, so the reference-equality gate in `propagate` treats every
+    // run as a change. See the matching TODO on `functionState` (src/function/state.ts).
     // test('Async data', () => {
     //   // Creating a Function State
     //   const data = functionState();

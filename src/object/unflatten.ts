@@ -11,7 +11,7 @@ import { toString } from '../to';
 import { objectEach } from './each';
 import { objectMerge } from './merge';
 
-// The Expanding Structure
+// The nested shape being built, and the signature of the unflatten pass
 type Item = { [key: string]: any };
 type Structure = (input: Item) => Item;
 
@@ -27,34 +27,35 @@ type Structure = (input: Item) => Item;
  * @returns A nested object reconstructed from the flattened input.
  */
 export const objectUnflatten: Structure = (input) => {
-    // The result that is returned
+    // The nested object that gets returned
     const result: Item = {};
 
     objectEach(input, ({ key: chain, value }) => {
-        // Let the current is the result
-
+        // Walk down from the root for this key chain: `previous` is the parent of
+        // `current`, and `pointer` is the segment of the parent that owns `current`.
         let previous: any = result;
         let current: any = previous;
         let pointer: any;
 
         const appendValue = (addValue: any) => {
-            // This is to save the buffered value
+            // Anything already parked at this level under '' is buffered, not overwritten
             const savedValue = current[''];
             let newValue = savedValue;
 
             if (savedValue !== undefined) {
+                // Second (or later) collision: promote the buffer to a list
                 newValue = arrayEnsures(savedValue);
 
-                // Adding New value to the List of Array
+                // Append the new value to that list
                 newValue.push(addValue);
             } else {
                 newValue = addValue;
             }
-            // Updating the Current Value Place
+            // Store the buffered value back at the empty-string key
             current[''] = newValue;
         };
 
-        // Scanning through the object chain, and reading each key
+        // Walk the dot-separated chain, opening one branch per segment
         toString(chain).split('.').forEach((key) => {
             // Making sure that current is always an object. The three branches are exactly what
             // the previous `typeSwitch(current[key], ...)` produced: a plain object is kept as
@@ -71,32 +72,30 @@ export const objectUnflatten: Structure = (input) => {
             }
             // A plain object is already a usable branch, so it stays in place
 
-            // Save Object to Previous
+            // Step down one level and remember which segment we came through
             previous = current;
             current = current[key];
-            // Saving the Pointer to Store Value into
             pointer = key;
         });
 
         // Adding to Current Pointer. `isObject` matches the previous `typeSwitch` "object"
         // bucket: only plain objects recurse, everything else (arrays included) is appended.
         if (isObject(value)) {
-            // if Value is an object, run recursive
+            // Object value: unflatten it and merge the result into the branch just opened
             previous[pointer] = objectMerge(current, objectUnflatten(value));
         } else {
-            // Appending Value to the Current Pointer Position
+            // Leaf value: buffer it at the current level
             appendValue(value);
         }
 
-        // Shifting Data
+        // Flattening out a level that exists only to hold a buffered collision
         const currentKeys = Object.keys(current);
         if (currentKeys.length === 1 && currentKeys[0] === '') {
-            // If Currenty keys is only 1, and it only includes the empty space
-            // Then move it to top level
+            // If the only key left is the empty-string buffer, the wrapper was unnecessary:
+            // lift the buffered value to the parent in its place
             previous[pointer] = current[''];
         }
     });
 
-    // Returning the Result
     return result;
 };

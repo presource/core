@@ -413,7 +413,7 @@ describe('Object Observe', () => {
 });
 
 describe('Object Observe wrapper identity', () => {
-    // Intentional behaviour change (perf issue H4): one Proxy is memoized per raw object, so the
+    // Intentional behaviour change: one Proxy is memoized per raw object, so the
     // same raw object always resolves to the same wrapper inside a single observer.
     test('Nested wrappers are memoized per raw object', () => {
         const source: any = { a: { b: { c: 1 } }, prim: 'x' };

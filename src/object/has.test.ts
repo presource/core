@@ -9,9 +9,9 @@ describe('Object Has', () => {
     });
 
     // ----------------------------------------------------------------------------------------
-    // Edge cases. Contract source: src/object/has.ts:15 - a bare own-property
-    // `object.hasOwnProperty(key)` guard, so the prototype chain is excluded and non-object
-    // receivers surface a TypeError rather than a boolean.
+    // Edge cases. Contract source: `objectHasKey` in src/object/has.ts - a bare own-property
+    // `object.hasOwnProperty(key)` guard, so the prototype chain is excluded. Only a
+    // `null`/`undefined` receiver surfaces a TypeError; primitives are boxed and answer normally.
     // ----------------------------------------------------------------------------------------
 
     test('own properties are true and prototype-chain properties are false', () => {
@@ -79,7 +79,7 @@ describe('Object Has', () => {
     });
 
     test('prototype-less objects throw because hasOwnProperty is looked up on the receiver', () => {
-        // has.ts:15 calls `object.hasOwnProperty` instead of Object.prototype.hasOwnProperty.call,
+        // `objectHasKey` calls `object.hasOwnProperty` instead of Object.prototype.hasOwnProperty.call,
         // so a null-prototype object has no method to invoke
         const bare = Object.create(null) as Record<string, number>;
         bare.z = 1;

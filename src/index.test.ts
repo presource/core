@@ -36,7 +36,7 @@ import { typeSwitch } from './type';
  * the namespace fails here.
  */
 const EXPECTED_EXPORTS = [
-    // src/constants/strings.ts (the only uppercase-named module, hence sorted first)
+    // src/constants/strings.ts - its UPPER_CASE names sort before every camelCase name (default Array#sort)
     'ALPHABET_STRING', 'EMPTY_STRING', 'NULL_STRING', 'NUMBERS_STRING', 'SPACE_STRING', 'UNDEFINED_STRING',
     // src/array, src/boolean, src/class, src/data
     'arrayCreate', 'arrayEach', 'arrayEachAsync', 'arrayEnsures', 'arrayRequeue', 'arrayShuffle', 'arrayWrapper',

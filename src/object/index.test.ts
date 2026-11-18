@@ -4,23 +4,23 @@ import { objectEach, objectUpdate, objectCreate } from '@presource/core';
 /**
  * src/object/index.ts barrel contract.
  *
- * Expected runtime surface, hand-derived from the 23 `export *` lines in
- * src/object/index.ts (lines 6-28) and the runtime exports of each source file:
- *   ./alias     -> objectAlias    (alias.ts:35)      ./map      -> objectMap (map.ts:30),
- *   ./create    -> objectCreate   (create.ts:39)                objectMapKeys (map.ts:60)
- *   ./each      -> objectEach (each.ts:66),                    ./merge      -> objectMerge (merge.ts:22)
- *                 objectEachAsync (each.ts:89)                ./observe    -> objectObserve (observe.ts:49)
- *   ./ensures   -> objectEnsures  (ensures.ts:25)             ./populate   -> objectPopulate (populate.ts:20)
- *   ./extract   -> objectExtract  (extract.ts:59)             ./proxy      -> objectProxy (proxy.ts:46)
- *   ./fill      -> objectFill     (fill.ts:19)                ./registry   -> objectRegistry (registry.ts:46)
- *   ./filter    -> objectFilter   (filter.ts:17)              ./resolve    -> objectResolve (resolve.ts:19)
- *   ./flatten   -> objectFlatten  (flatten.ts:46)             ./scan       -> objectScan (scan.ts:50)
- *   ./has       -> objectHasKey   (has.ts:15)                 ./shuffle    -> objectShuffle (shuffle.ts:17)
- *   ./switch    -> objectSwitch   (switch.ts:45)              ./transform  -> objectTransform (transform.ts:46)
- *   ./trigger   -> objectTrigger  (trigger.ts:43)             ./unflatten  -> objectUnflatten (unflatten.ts:29)
- *   ./update    -> objectUpdate   (update.ts:18)
+ * Expected runtime surface, hand-derived from the `export *` lines in
+ * src/object/index.ts and the runtime exports of each source file:
+ *   ./alias     -> objectAlias (alias.ts)       ./map      -> objectMap (map.ts),
+ *   ./create    -> objectCreate (create.ts)              objectMapKeys (map.ts)
+ *   ./each      -> objectEach (each.ts),                ./merge      -> objectMerge (merge.ts)
+ *                 objectEachAsync (each.ts)            ./observe    -> objectObserve (observe.ts)
+ *   ./ensures   -> objectEnsures (ensures.ts)           ./populate   -> objectPopulate (populate.ts)
+ *   ./extract   -> objectExtract (extract.ts)           ./proxy      -> objectProxy (proxy.ts)
+ *   ./fill      -> objectFill (fill.ts)                 ./registry   -> objectRegistry (registry.ts)
+ *   ./filter    -> objectFilter (filter.ts)             ./resolve    -> objectResolve (resolve.ts)
+ *   ./flatten   -> objectFlatten (flatten.ts)           ./scan       -> objectScan (scan.ts)
+ *   ./has       -> objectHasKey (has.ts)                ./shuffle    -> objectShuffle (shuffle.ts)
+ *   ./switch    -> objectSwitch (switch.ts)             ./transform  -> objectTransform (transform.ts)
+ *   ./trigger   -> objectTrigger (trigger.ts)           ./unflatten  -> objectUnflatten (unflatten.ts)
+ *   ./update    -> objectUpdate (update.ts)
  *
- * TYPE-ONLY EXPORT — pinned by this list: `ObjectConstant` (src/object/constant.ts:3)
+ * TYPE-ONLY EXPORT — pinned by this list: `ObjectConstant` (src/object/constant.ts)
  * is `export type` only AND its file is not even listed in the barrel's `export *`
  * lines, so it must NOT appear in the runtime key list below. The same applies to the
  * per-file signature types (ObjectAlias, ObjectExtract, ObjectObserve, Structure, ...).
@@ -61,7 +61,7 @@ describe('object barrel (src/object/index.ts)', () => {
 
     test('ObjectConstant is type-only and absent from the runtime surface', () => {
         // Exact-key assertion above already excludes it; this explicit check documents
-        // the intent (src/object/constant.ts:3 is `export type`, never re-exported).
+        // the intent (`ObjectConstant` in src/object/constant.ts is `export type`, never re-exported).
         expect(Object.keys(objectModule).sort().includes('ObjectConstant')).toBe(false);
         expect((objectModule as any).ObjectConstant).toBeUndefined();
     });

@@ -44,7 +44,8 @@ export const objectCreate = (keys: Keys, values: Values): { [key: string]: any }
     // mapping it to `[0..n-1]` on every call.
     let keyCount = -1;
     const keysList: string[] = typeSwitch(keys, {
-        // If Number. Keys fill with 0 to number value
+        // If Number, the input is a key COUNT rather than a key list: it seeds `keyCount`
+        // and the returned list stays empty.
         // Number should be positive. The clamp mirrors arrayCreate's number mode
         // (array/create.ts:71) so -3 / NaN collapse to zero keys and 2.7 to two keys.
         number: ({ value }) => {
@@ -52,24 +53,24 @@ export const objectCreate = (keys: Keys, values: Values): { [key: string]: any }
             // The list is unused for numeric keys; return an empty one to keep typeSwitch happy
             return [];
         },
-        // If String, return a single value
+        // If String, the whole input is the single key
         string: () => [keys],
-        // If input is an array.
+        // If Array, each element is used as a key as-is
         array: () => keys,
-        // Default Return Array
+        // Any other key type yields no keys at all (an empty object result)
         default: () => []
     });
 
-    // Return a Value Function
+    // Normalise `values` into one callback shape: ({ value, index }) => any
     const callback = typeSwitch(values, {
-        // If Function. Return the Values
+        // If Function, it is already the callback shape
         function: () => values,
+        // If Array, pair each index with its element
         array:
             ({ value }) =>
-            // Construct a Remap Array by Key for Values
             ({ index }: { index: number }) =>
                 value[index],
-        // By Default. Create a Stand in Function
+        // Otherwise a stand-in that hands back the same literal every time
         default: () => () => values
     });
 
@@ -85,6 +86,5 @@ export const objectCreate = (keys: Keys, values: Values): { [key: string]: any }
             result[value] = callback({ value, index });
         });
     }
-    // Returning the Result
     return result;
 };

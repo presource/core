@@ -7,10 +7,10 @@ import { stringCapitalize, stringIncludes, stringReverse, stringSwitch, stringSw
  * Expected runtime surface, hand-derived from the four `export *` lines in
  * src/string/index.ts (lines 8-11) and the runtime exports of each source file:
  *   ./capitalize -> stringCapitalize    (src/string/capitalize.ts:19)
- *   ./includes   -> stringIncludes      (src/string/includes.ts:54)
+ *   ./includes   -> stringIncludes      (src/string/includes.ts:74)
  *   ./reverse    -> stringReverse       (src/string/reverse.ts:14)
- *   ./switch     -> stringSwitch        (src/string/switch.ts:76)
- *                 -> stringSwitchAsync  (src/string/switch.ts:93)
+ *   ./switch     -> stringSwitch        (src/string/switch.ts:98)
+ *                 -> stringSwitchAsync  (src/string/switch.ts:115)
  *
  * `Structure` / `Cases` (switch.ts, includes.ts) are type-only.
  */

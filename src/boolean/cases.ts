@@ -14,7 +14,7 @@ import { objectEach } from '../object';
 /** An object mapping string keys to arbitrary values (conditions). */
 type Cases = { [key: string]: any };
 
-/** Argument object passed to the callback for each evaluated case. */
+/** Argument object passed to the callback for each evaluated case: `value` is the evaluated case and `result` is the LIVE accumulator (both declared loosely). */
 type Argument<T> = { key: string; value: boolean; result: keyof T };
 
 /** Callback signature invoked for each evaluated case. */
@@ -39,22 +39,22 @@ type Callback<T> = (arg: Argument<T>) => any;
  * @returns The callback's return value if defined; otherwise the accumulated result object.
  */
 export const booleanCases = <T extends Cases>(cases: T, callback?: Callback<T>, caller?: any) => {
-  // The Complete Result
+  // Accumulator: one entry per key, filled in iteration order and shared with every callback
   const result: any = {};
-  // Using Object Each
+  // objectEach stops the walk as soon as the callback returns a non-undefined value
   const feedback = objectEach(cases, ({ key, value: caseValue }: any) => {
-    // Triggering the Value Evaluations
+    // Route the raw value through typeSwitch so that only real objects recurse
     const value: any = typeSwitch(caseValue, {
-      // Special case: Recursive. Nested Result. Route through the caller if it is given, however.
+      // Objects recurse; a supplied `caller` replaces that recursion and its return becomes the value
       object: () => (caller ? caller(caseValue) : booleanCases(caseValue, callback)),
-      // If It is a Function. Evaluate It Accordingly
+      // Functions are called with the accumulator built so far, then coerced with !!
       function: () => !!caseValue(result),
-      // By Default. Evaluate the Value as it is
+      // Arrays, dates and class instances land here: they are plain `!!value` coercions
       default: () => !!caseValue,
     });
-    // Updating the Ongoing Result
+    // Written before the callback runs, so the callback already sees the current key
     result[key] = value;
-    // Triggering the Callback
+    // A non-undefined callback return becomes `feedback` and short-circuits the objectEach walk
     return callback
       ? callback({
           value,
@@ -64,6 +64,6 @@ export const booleanCases = <T extends Cases>(cases: T, callback?: Callback<T>, 
       : undefined;
   });
 
-  // Only Return the Feedback if it is not undefined. Else. Return the Result
+  // A defined `feedback` wins verbatim (even `0` / `null`); otherwise the accumulated result is returned
   return feedback !== undefined ? feedback : result;
 };

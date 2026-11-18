@@ -6,7 +6,7 @@ describe('taskCompletion requirements', () => {
         // Creating a new task with 3 thread
         const task = taskCompletion(3);
 
-        //  Adding a new task
+        // Adding a new task
         task.add(async () => {
             result.push('apple');
         });
@@ -210,7 +210,7 @@ describe('taskCompletion requirements', () => {
         expect(result).toStrictEqual(['ran']);
     });
 
-    // normalizeThreadCount (src/task/completion.ts:23-26) floors the value and
+    // normalizeThreadCount (src/task/completion.ts:30-33) floors the value and
     // clamps anything below 1 (including NaN) to 1, so the number of tasks that
     // start synchronously inside `add` is exactly the clamped thread count.
     it.each([
@@ -276,7 +276,7 @@ describe('taskCompletion requirements', () => {
     });
 
     // ------------------------------------------------------------------
-    // G3 — every queued entry must settle, whatever shape it has
+    // Every queued entry must settle, whatever shape it has
     // ------------------------------------------------------------------
 
     it('resolves completion after a queued sync-returning task instead of resolving early', async () => {
@@ -495,7 +495,7 @@ describe('taskCompletion requirements', () => {
 
     // NOTE on coverage: the old `add` body read
     // `if (completed) completed = false;` followed by `if (!completed) run();`.
-    // The reset always ran first, so line 85 was tautologically true and its
+    // The reset always ran first, so the `if (!completed)` guard was tautologically true and its
     // false side was an uncoverable dead branch. That branch (and the latch, which
     // had no other reader) is gone — `add` pushes and dispatches unconditionally,
     // so there is no uncovered branch left in this module.

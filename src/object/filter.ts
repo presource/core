@@ -29,9 +29,9 @@ export const objectFilter = <T extends {}>(
 ) => {
   const result: { [key in keyof T]?: T[keyof T] } = {};
   objectEach(object, (data) => {
-    // If Trigger Callback is True. Filter out Function
+    // The predicate sees the whole objectEach payload and is forwarded it untouched;
+    // a truthy answer keeps the property, anything else drops it.
     if (callback(data)) result[data.key] = data.value;
   });
-  // Return Possible Result
   return result;
 };

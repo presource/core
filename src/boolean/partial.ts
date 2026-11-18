@@ -24,21 +24,21 @@ export const booleanPartialTrue = (cases: { [key: string]: any }) => {
   let result = false;
   booleanCases(cases, ({ value }) => {
     const boolValue = typeSwitch(value, {
-      // Recursive if it is an Object
+      // Nested objects recurse through this same helper; an EMPTY nested object is hard-coded truthy
       object: ({ value: objValue }) => (Object.keys(objValue).length ? booleanPartialTrue(objValue) : true),
       default: () => value,
     });
-    // If boolValue is true. Return result as true
+    // The first truthy leaf settles the result; returning it also stops the booleanCases walk
     if (boolValue) return (result = true);
   });
-  // Return the Final Result
+  // Stays false when no leaf, at any depth, evaluated truthy
   return result;
 };
 
 /**
  * Returns true if at least one condition in the cases object is falsy.
  *
- * Recursively evaluates nested objects the same way as `booleanPartialTrue`.
+ * Nested objects are judged by `booleanPartialTrue`, so a nested object only counts as falsy when every one of its leaves is falsy - see the note on the object branch below before treating that recursion as a typo.
  *
  * @param cases - An object whose values are the conditions to evaluate.
  * @returns true if any condition resolves to falsy; false otherwise.
@@ -47,14 +47,20 @@ export const booleanPartialFalse = (cases: { [key: string]: any }) => {
   let result = false;
   booleanCases(cases, ({ value }) => {
     const boolValue = typeSwitch(value, {
-      // Recursive if it is an Object
-      // TODO: pending - BUG: booleanPartialFalse incorrectly calls booleanPartialTrue for nested objects. Should be booleanPartialFalse(value)
+      // Nested objects recurse through booleanPartialTrue, NOT through this helper - see the note below
+      // TODO: pending - Nested objects are evaluated with `booleanPartialTrue` here:
+      // the caller inverts the result with `!boolValue`, so a nested object signals
+      // 'falsy' only when all of its leaves are falsy. Swapping in
+      // `booleanPartialFalse` would report an all-truthy nested object as partial-false
+      // (pinned in partial.test.ts). Whether the divergence is deliberate or simply
+      // unfixed is undecidable from the source, so changing it must be a deliberate,
+      // test-visible decision
       object: ({ value: objValue }) => (Object.keys(objValue).length ? booleanPartialTrue(objValue) : true),
       default: () => value,
     });
-    // If boolValue is true. Return result as true
+    // The test is inverted: the FIRST falsy leaf settles the result and stops the booleanCases walk
     if (!boolValue) return (result = true);
   });
-  // Return the Final Result
+  // Stays false when no leaf, at any depth, evaluated falsy
   return result;
 };

@@ -30,8 +30,8 @@ describe('Usage of objectFilter', () => {
     });
 
     // ----------------------------------------------------------------------------------------
-    // Edge cases. Contract source: src/object/filter.ts:17-37. The predicate receives the
-    // full objectEach parameter object (filter.ts:33 forwards `data` untouched), keeping only
+    // Edge cases. Contract source: `objectFilter` in src/object/filter.ts. The predicate receives the
+    // full objectEach parameter object (`objectFilter` forwards `data` untouched), keeping only
     // truthy predicate results, and the accumulator is a brand new plain object.
     // ----------------------------------------------------------------------------------------
 

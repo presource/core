@@ -13,9 +13,12 @@ type ObjectPopulate = <T, P>(referencedObject: T, populationData: P) => any;
 /**
  * Populates `referencedObject` with values derived from `populationData`.
  *
- * @param referencedObject - The object to populate in place.
- * @param populationData - The source data used to fill in the object.
- * @returns Currently `undefined` (stub).
+ * Unimplemented: both parameters are accepted but never read, and the call is a
+ * no-op that writes nothing to `referencedObject`.
+ *
+ * @param referencedObject - The object intended to be populated in place.
+ * @param populationData - The source data intended to fill in the object.
+ * @returns Always `undefined` (stub) - notably NOT the populated object.
  */
 export const objectPopulate: ObjectPopulate = (referencedObject, populationData) => {
   return undefined;

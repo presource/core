@@ -1,9 +1,10 @@
 /**
  * Type guard utilities module.
  *
- * Provides a comprehensive collection of type-checking predicates and
- * equality helpers for detecting JavaScript value types at runtime.
- * This is a barrel file that re-exports all type guard utilities.
+ * Barrel over the type-checking predicates (`isBoolean` / `isNumber` / `isString` /
+ * `isObject` / `isPromise` / `isFunction` ...), the nullish checks (`isValid` /
+ * `isInvalid`) and the recursive emptiness checks (`isEmpty` / `isEmptyArray` /
+ * `isEmptyObject`).
  */
 export * from './boolean';
 export * from './empty';

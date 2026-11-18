@@ -40,22 +40,24 @@ type Structure = (input: Item, transforms: Transformers, layers?: Arguments[]) =
  *
  * @param input - The object to transform.
  * @param transformers - A map of keys to their transform rules.
- * @param layers - Previously accumulated argument snapshots for nested calls.
+ * @param layers - Ancestor snapshots carried into a nested transform; a callback receives
+ *        this level's snapshot first, then these.
  * @returns A new object with the transformed values.
  */
 export const objectTransform: Structure = (input, transformers, layers = []) => {
-  // The Resulting object
+  // The output object is what gets returned; rules are written into it as they resolve
   const output: Item = {};
-  // Getting the amount of invalid total
+  // Count of rules still unresolved; the pass loop below stops when this stops shrinking
   let invalid = Object.keys(transformers).length;
-  // Making sure input is an object
+  // A non-object input is treated as empty rather than throwing
   input = isObject(input) ? input : {};
 
   const processData = (k: string, v: any) => {
-    // Getting the input value
+    // The value currently stored under this key in the input
     const inputValue = input[k];
 
-    // The Current param level
+    // The callback payload: this level's snapshot first, then the ancestor snapshots that
+    // the enclosing transform passed down as `layers` (empty at the top level)
     const params: any = [
       {
         key: k,
@@ -67,39 +69,39 @@ export const objectTransform: Structure = (input, transformers, layers = []) => 
 
     const transformedValue = typeSwitch(v, {
       function: (data) => {
-        // Return the transform data
+        // Function rule: invoke it with the payload built above
         return data.value(...params);
       },
-      // If it is an object, then try to do nesting
+      // Object rule: recurse, treating the rule map as a nested transformer and the input
+      // value at this key as the nested input
       object: (data) => {
-        // Nested transformation
         return objectTransform(inputValue, data.value, params);
       },
+      // Literal rule (string/number/boolean/null/undefined): used as the value verbatim
       default: () => v,
     });
 
     if (transformedValue !== undefined) {
-      // Only save to output if transformed value is not undefined
+      // Only a resolved rule is written; an undefined result leaves the key pending
       output[k] = transformedValue;
       invalid--;
     }
   };
 
-  // Continuing to resolve!
+  // Re-run the whole rule map until a pass resolves nothing new
   while (invalid) {
     const remaining = invalid;
-    // Scanning through each item and apply transformation
+    // One pass over every rule
     objectEach(transformers, ({ key, value }: any) => {
-      // Continue to process until validation is complete
+      // Keys already resolved in an earlier pass are skipped (dependency ordering)
       if (!objectHasKey(output, key)) {
         processData(key, value);
       }
     });
 
-    // Nothing changes, meaning cannot resolve further
+    // Nothing resolves, meaning cannot resolve further
     if (remaining === invalid) break;
   }
 
-  // Return the resulting object
   return output;
 };

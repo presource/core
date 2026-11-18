@@ -5,27 +5,27 @@ describe('js/to/toString', () => {
         expect(toString(1)).toBe('1');
         expect(toString(null)).toBe('null');
         expect(toString(undefined)).toBe('undefined');
-        // Empty is not the same as inputing undefined!
+        // Passing no argument is not the same as passing undefined!
         expect(toString()).toBe('');
     });
 
     test('Converting objects to string', () => {
-        // Array Testing
+        // Arrays route through the `array` case and are JSON-stringified
         expect(toString([])).toBe('[]');
         expect(toString([1, 2, 3])).toBe('[1,2,3]');
 
-        // Object Testing
+        // Plain objects route through the `object` case and are JSON-stringified
         expect(toString({})).toBe('{}');
         expect(toString({ a: 1, b: 2, c: 3 })).toBe('{"a":1,"b":2,"c":3}');
 
-        // Function Testing using arrow function
+        // Functions match no type case, so the default branch calls their own toString()
         expect(toString(() => {})).toBe('() => {}');
-        // Old Function Format
+        // The legacy `function` keyword form, stringified from its own source text
         const test = function () {};
         expect(toString(test)).toBe('function() {}');
     });
 
-    // Advance Usage
+    // Two or more arguments: every value is converted and the results come back as an array
     test('Multiple conversion', () => {
         const convert = [1, [], 'hi'];
         expect(toString(...convert)).toStrictEqual(['1', '[]', 'hi']);
@@ -131,7 +131,7 @@ describe('js/to/toString', () => {
         const repeated: unknown = toString(undefined, undefined);
         expect(repeated).toStrictEqual(['undefined', 'undefined']);
 
-        // Two arguments is already enough to leave the string branch
+        // One argument still lands in the string branch; two are already enough to leave it
         const single: unknown = toString('a');
         expect(single).toBe('a');
     });
@@ -147,13 +147,13 @@ describe('js/to/toString', () => {
 });
 
 /**
- * Perf-wave contract pins for the single-scalar fast path (T-A).
+ * Contract pins for the single-scalar fast path.
  *
- * `toString` short-circuits `string` / `number` / `boolean` / `null` / `undefined`
- * for a single argument instead of routing them through `stringSwitch` +
- * `typeSwitch` (measured 35x for `toString(42)`). `String()` produces exactly what
- * the old `typeSwitch` fallback produced for those five inputs - the sentinel
- * strings included - so only the cost changed.
+ * `toString` short-circuits `string` / `number` / `boolean` for a single argument
+ * instead of routing them through `stringSwitch` + `typeSwitch` (measured ~35x for
+ * `toString(42)`). `String()` produces exactly what the old `typeSwitch` fallback
+ * produced for those three inputs, so only the cost changed. `null` / `undefined`
+ * deliberately stay on the old path: their sentinel cases must keep running.
  *
  * Everything else still takes the original path and is pinned here: boxed
  * primitives keep their own `toString()`, bigint / symbol / function keep routing

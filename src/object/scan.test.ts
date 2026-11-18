@@ -246,8 +246,8 @@ describe('Object Scan', () => {
     });
 
     test('A self-referencing object overflows the stack, unlike what the scan.ts:43-44 comment claims', () => {
-        // G6: the JSDoc at scan.ts:43-44 promises "preventing infinite loops on circular
-        // re-assignments", but the guard at scan.ts:70 only skips recursion when the callback
+        // The scan.ts JSDoc once promised "preventing infinite loops on circular
+        // re-assignments", but the recursion guard in `objectScan` only skips recursion when the callback
         // REPLACED the value. An untouched `a.self = a` still satisfies `value === object[key]`,
         // so the walk re-enters forever and the engine throws RangeError. No seen-set is tracked
         // (adding one would change the traversal contract, so it is deliberately left as-is).

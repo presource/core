@@ -4,14 +4,14 @@ import { arrayCreate, arrayEach } from '@presource/core';
 /**
  * src/array/index.ts barrel contract.
  *
- * Expected runtime surface, hand-derived from the six `export *` lines in
- * src/array/index.ts (lines 8-13) and the runtime exports of each source file:
- *   ./create   -> arrayCreate        (src/array/create.ts:45)
- *   ./each     -> arrayEach (each.ts:76), arrayEachAsync (each.ts:100)
- *   ./ensures  -> arrayEnsures       (src/array/ensures.ts:21)
- *   ./requeue  -> arrayRequeue       (src/array/requeue.ts:16)
- *   ./shuffle  -> arrayShuffle       (src/array/shuffle.ts:24)
- *   ./wrapper  -> arrayWrapper       (src/array/wrapper/index.ts:114)
+ * Expected runtime surface, hand-derived from the `export *` lines in
+ * src/array/index.ts and the runtime exports of each source file:
+ *   ./create   -> arrayCreate (src/array/create.ts)
+ *   ./each     -> arrayEach, arrayEachAsync (src/array/each.ts)
+ *   ./ensures  -> arrayEnsures (src/array/ensures.ts)
+ *   ./requeue  -> arrayRequeue (src/array/requeue.ts)
+ *   ./shuffle  -> arrayShuffle (src/array/shuffle.ts)
+ *   ./wrapper  -> arrayWrapper (src/array/wrapper/index.ts)
  *
  * Deliberately absent (type-only, erased at compile time): ArrayCreate, ArrayEach,
  * ArrayEachAsync, ArrayShuffle, Params. Also absent: the nine `*Function` helpers under

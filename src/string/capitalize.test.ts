@@ -7,7 +7,8 @@ import { stringCapitalize } from '@presource/core';
  * - `value.split(' ')` means ONLY the ASCII space separates words: tabs and
  *   newlines stay inside a single "word".
  * - Empty words (consecutive / leading / trailing spaces) short-circuit at line 21.
- * - A negative `letter` is rebased ONCE (`letter += length`, line 25) and then
+ * - A negative `letter` is rebased ONCE (the `if (letter < 0) letter += length`
+ *   statement below the TODO) and then
  *   mutates the shared parameter for every following word. Known upstream bug,
  *   tracked by the TODO at capitalize.ts:24 - tests pin the ACTUAL output.
  * - `charAt` returns '' for out-of-range indexes, so those words come back unchanged.
@@ -29,7 +30,7 @@ describe('stringCapitalize', () => {
         const input = 'capitalise this string';
         const output = 'Capitalise This String';
 
-        // Expectation
+        // Every space-separated word is capitalised on its own, the rest of each word untouched
         expect(stringCapitalize(input)).toEqual(output);
     });
 

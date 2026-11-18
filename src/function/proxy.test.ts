@@ -4,7 +4,8 @@ import { functionProxy, stringSwitch } from '@presource/core';
  * Contract under test: `functionProxy(callback)` (src/function/proxy.ts).
  *
  * `currentKey` / `throughGetQuery` live in the factory closure and are per
- * `functionProxy` call (the TODO at proxy.ts:35 documents them as shared). The
+ * `functionProxy` call (pinned below). The TODO on `functionProxy` records that they are
+ * only cleared by a call, so an unconsumed read leaks its key into the next call. The
  * `get` trap returns `callback(...) || target`, so a falsy trigger result leaks the
  * RAW unproxied target function, and a later call still reports the stale key.
  * The `set` trap must return a truthy value or the assignment throws.
@@ -44,8 +45,8 @@ describe('Testing Proxy Function', () => {
         expectedParameters = ['banana'];
         proxy.update('banana');
 
-        // If went through the proxy function then the key is empty... or null?
-        // Maybe null is better
+        // A bare call reports `null`: the preceding keyed call already cleared the flag,
+        // so `currentKey` is not attributed to this invocation.
         expectedCurrentKey = null;
         proxy('banana');
 

@@ -7,13 +7,13 @@ import { functionChain } from '@presource/core';
  * Expected runtime surface, hand-derived from the nine `export *` lines in
  * src/function/index.ts (lines 6-14) and the runtime exports of each source file:
  *   ./chain   -> functionChain   (src/function/chain.ts:48)
- *   ./control -> functionControl (src/function/control.ts:27)
+ *   ./control -> functionControl (src/function/control.ts:37)
  *   ./curry   -> functionCurry   (src/function/curry.ts:27)
- *   ./delay   -> functionDelay   (src/function/delay.ts:17)
+ *   ./delay   -> functionDelay   (src/function/delay.ts:22)
  *   ./options -> functionOptions (src/function/options.ts:44)
  *   ./pipe    -> functionPipe    (src/function/pipe.ts:33)
  *   ./proxy   -> functionProxy   (src/function/proxy.ts:32)
- *   ./queue   -> functionQueue   (src/function/queue.ts:49)
+ *   ./queue   -> functionQueue (src/function/queue.ts:79)
  *   ./state   -> functionState   (src/function/state.ts:30)
  *
  * FunctionControl / FunctionOptions (and the local `Callback`, `PipeReturn`, etc.) are

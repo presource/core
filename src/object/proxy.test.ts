@@ -310,7 +310,7 @@ describe('Object Proxy - Proxifying an Object', () => {
 });
 
 describe('Object Proxy - params lifetime and trigger fast paths', () => {
-    // Trade-off T3: the params object is allocated per access and never reused, so a trigger that
+    // Deliberate lifetime choice: the params object is allocated per access and never reused, so a trigger that
     // keeps the payload must still see the values it was given after later accesses.
     test('retained get payloads keep their values after later reads', () => {
         const object: any = { first: 1, second: 2 };

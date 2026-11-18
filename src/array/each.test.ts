@@ -28,7 +28,7 @@ describe('Basic Usage of arrayEach', () => {
     // Expect End prematurely and return result
 
     test('Return Proper Value', () => {
-        // Scanning Through Array. If Value hit greater than 5. Return it. So it is 6
+        // The first element above 5 returns a defined value, which short-circuits the walk
         expect(
             arrayEach([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], ({ value }) => {
                 if (value > 5) return value;
@@ -199,10 +199,11 @@ describe('Advance usage of arrayEach', () => {
         arrayEach(arrayCreate(12), (data) => {
             // Incrementing Count
             count++;
-            // Set Data.length to 0. Automatically Stop
+            // The callback receives the SHARED params object, so writing `length = 0` here
+            // rewrites the loop bound and stops the walk after this single iteration
             data.length = 0;
         });
-        // Exepect One to Go Through
+        // Expect exactly one iteration to go through
         expect(count).toBe(1);
     });
 });

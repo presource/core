@@ -84,9 +84,9 @@ describe('objectMerge', () => {
     });
 
     // ----------------------------------------------------------------------------------------
-    // Edge cases. Contract source: src/object/merge.ts:25-52. Recursion happens only when the
-    // incoming value is a plain object (merge.ts:35 `isObject`) AND the accumulated value
-    // already is a plain object (merge.ts:41); everything else overwrites wholesale.
+    // Edge cases. Contract source: `objectMerge` in src/object/merge.ts. Recursion happens only when the
+    // incoming value is a plain object (`isObject`) AND the accumulated value
+    // already is a plain object (the `isObject(currentValue)` ternary in merge.ts); everything else overwrites wholesale.
     // ----------------------------------------------------------------------------------------
 
     it('should merge zero and one arguments', () => {
@@ -134,7 +134,7 @@ describe('objectMerge', () => {
     });
 
     it('should let null and undefined overwrite a plain object', () => {
-        // null/undefined fail the `isObject` test at merge.ts:35, so the overwrite branch (:44) runs
+        // null/undefined fail `objectMerge`'s plain-object `isObject` test, so the else-overwrite branch runs
         expect(objectMerge({ a: { b: 1 } }, { a: null })).toStrictEqual({ a: null });
         expect(objectMerge({ a: { b: 1 } }, { a: undefined })).toStrictEqual({ a: undefined });
         // Keys written with undefined stay present in the result
@@ -142,7 +142,7 @@ describe('objectMerge', () => {
     });
 
     it('should let a plain object overwrite a null placeholder', () => {
-        // The accumulated value is null, so the `isObject(currentValue)` guard at merge.ts:41
+        // The accumulated value is null, so the `isObject(currentValue)` guard in merge.ts
         // hands the incoming value straight through (aliased, not cloned)
         const incoming = { b: 1 };
         const result = objectMerge({ a: null }, { a: incoming });
@@ -240,15 +240,15 @@ describe('objectMerge', () => {
     });
 
     it('should throw when an argument is null or undefined', () => {
-        // objectEach walks Object.keys on every argument (merge.ts:31)
+        // `objectMerge` runs `objectEach` on every argument, and objectEach walks `Object.keys`
         expect(() => objectMerge({ a: 1 }, null as any)).toThrow(TypeError);
         expect(() => objectMerge({ a: 1 }, null as any)).toThrow('Cannot convert undefined or null to object');
         expect(() => objectMerge({ a: 1 }, undefined as any)).toThrow('Cannot convert undefined or null to object');
     });
 
     it('should blow the stack on a two-sided cycle instead of tracking visited objects', () => {
-        // G5: objectMerge has no seen-set. `a.self = a` / `b.self = b` means every level has a
-        // plain object on both sides, so the recursion at merge.ts:41 never bottoms out and the
+        // `objectMerge` has no seen-set. `a.self = a` / `b.self = b` means every level has a
+        // plain object on both sides, so the `objectMerge(currentValue, value)` recursion never bottoms out and the
         // engine raises RangeError (Maximum call stack size exceeded).
         const first: any = {};
         first.self = first;
@@ -262,8 +262,9 @@ describe('objectMerge', () => {
     });
 
     it('should alias a one-sided cycle by reference instead of recursing into it', () => {
-        // G5: the cycle only merges when the accumulator already holds a plain object. With the
-        // key present on one side only, merge.ts:41 hands the cyclic object through untouched,
+        // The cycle only merges when the accumulator already holds a plain object. With the
+        // key present on one side only, the overwrite side of the `isObject(currentValue)`
+        // ternary in merge.ts hands the cyclic object through untouched,
         // so no RangeError happens and the result aliases the original.
         const cyclic: any = {};
         cyclic.self = cyclic;

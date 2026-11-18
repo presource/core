@@ -23,7 +23,7 @@ type CountFunction = (params: Params, request: Request) => number;
 
 /**
  * `null` keyword predicate.
- * Module scope (L2): these two checkers used to be re-created as fresh closures
+ * Module scope: these two checkers used to be re-created as fresh closures
  * on every `count()` call, together with the whole options map below.
  */
 const isNull = (value: any) => value === null;
@@ -33,7 +33,7 @@ const isUndefined = (value: any) => value === undefined;
 
 /**
  * Map of type names to their corresponding type-checking functions.
- * Hoisted to module scope (L2) so the 8-entry object is allocated once per
+ * Hoisted to module scope so the 8-entry object is allocated once per
  * module instead of once per `count()` call.
  */
 const COUNT_CHECKS: { [key in RequestString]: (value: any) => boolean } = {
@@ -49,7 +49,7 @@ const COUNT_CHECKS: { [key in RequestString]: (value: any) => boolean } = {
 
 /**
  * Shared always-true predicate used for unrecognised keywords.
- * Also module scope (L2) to avoid one closure allocation per call.
+ * Also module scope to avoid one closure allocation per call.
  */
 const COUNT_ALL = () => true;
 

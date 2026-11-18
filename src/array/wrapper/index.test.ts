@@ -4,7 +4,8 @@ import { arrayWrapper } from '@presource/core';
  * `arrayWrapper` factory contract (src/array/wrapper/index.ts).
  *
  * The factory returns a `(element, config?) => proxy` builder. Every property read
- * goes through the objectProxy `get` trap (index.ts:123-157), which resolves custom
+ * goes through the objectProxy `get` trap that the factory passes to `objectProxy`, which
+ * resolves custom
  * extension callbacks FIRST and falls back to the built-in method map, so an
  * extension named like a built-in shadows it.
  */
@@ -54,7 +55,7 @@ describe('arrayWrapper', () => {
         const wrapper = arrayWrapper()(sample);
         // objectProxy wraps a function target, so the instance is callable...
         expect(typeof wrapper).toBe('function');
-        // ...but calling it hits the not-yet-implemented placeholder (index.ts:117-119)
+        // ...but calling it hits the not-yet-implemented `handler` placeholder target
         expect((wrapper as any)()).toBeNull();
     });
 
@@ -107,12 +108,12 @@ describe('arrayWrapper', () => {
         expect(received.instance).toBe(wrapper);
         // A root wrapper gets the default empty config object
         expect(Object.keys(received.config)).toStrictEqual([]);
-        // Param keys are exactly these five (index.ts:125-130)
+        // Param keys are exactly these five (the `params` literal built in the `get` trap)
         expect(Object.keys(received).sort()).toStrictEqual(['args', 'config', 'element', 'instance', 'wrapper']);
     });
 
     test('the documented w/e/c/i aliases are not populated at runtime', () => {
-        // Params declares w/e/c/i shorthands (index.ts:37-44) but the get trap only
+        // Params declares w/e/c/i shorthands but the get trap only
         // builds wrapper/element/config/instance, so the aliases are undefined.
         let aliases: any = null;
         const $array = arrayWrapper({
@@ -162,7 +163,7 @@ describe('arrayWrapper', () => {
 
     test('G18: a no-element wrapper still calls to null, but count() throws', () => {
         // `arrayWrapper()()` builds the proxy with `element === undefined`: the
-        // instance is the callable placeholder (index.ts:117-119), so invoking it
+        // instance is the callable placeholder (`handler` Proxy target), so invoking it
         // yields null, while any method that reads the element dereferences it.
         const wrapper = arrayWrapper()() as any;
         // The instance itself is the callable proxy, not the null it returns.

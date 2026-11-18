@@ -36,7 +36,9 @@ type HandlerFunction = (handler: { each: (callback: EachCallback) => any }) => a
  * The returned `accessor` is polymorphic:
  * - Called with a `string` key: gets the value (or sets it if a second `value` argument is provided).
  * - Called with an `object`: bulk-updates the registry via `objectUpdate`.
- * - Called with an `array`: maps the array by looking up each element as a registry key.
+ * - Called with an `array`: builds a PLAIN OBJECT keyed by each requested element, where every
+ *   value is that key's registry entry (keys missing from the registry are present with an
+ *   `undefined` value) — it does not return an array.
  * - Called with a `function`: invokes it with an `{ each }` handler for iteration.
  * - Called with no arguments: returns the raw registry object.
  *
@@ -44,35 +46,31 @@ type HandlerFunction = (handler: { each: (callback: EachCallback) => any }) => a
  * @returns A polymorphic accessor function.
  */
 export const objectRegistry = (registry: { [key: string]: any } = {}) => {
-    // Constructing the Accessor Function
+    // The polymorphic accessor: `typeSwitch` picks a branch from the request's runtime type
     const accessor = (key?: Key | HandlerFunction, value?: any) =>
-        // Matching typeof key against certain values
         typeSwitch(key, {
-            // Handler Function
+            // If Function, hand the handler object straight back to the caller ("triggering self")
             function: ({ value }) =>
-                // Triggering Self
                 value({
-                    // Each Function. Looping back with object Each
+                    // `each` forwards the whole registry walk to the caller's callback
                     each: (callback: EachCallback) => objectEach(registry, (data) => callback(data))
                 }),
-            // If Array. Return Proper Values
+            // If Array, build `{ [requestedKey]: registryValue }` via objectCreate
             array: ({ value }) => objectCreate(value, ({ value: k }) => registry[k]),
-            // if it is number. treat it as a string key lookup
+            // If Number, reuse the string branch so the number is coerced into a property key
             number: (data) => data.string(data.value),
-            // if key is string
+            // If String, read (no `value` argument) or write (with one)
             string: ({ value: keyValue }) => {
-                // If value is undefined. Return the Registry with Key
+                // Read mode: a bare key access just returns the stored entry
                 if (value === undefined) return registry[keyValue];
-                // Updating the Registry
+                // Write mode: store the entry, then hand back the accessor for chaining
                 registry[keyValue] = value;
-                // returning the accessor Function
                 return accessor;
             },
-            // If Object. update the Registry
+            // If Object, bulk-update the registry and return the mutated registry object
             object: ({ value }) => objectUpdate(registry, value),
-            // For Everything Else. Return Registry
+            // Anything else (including no arguments at all) returns the raw registry object
             default: () => registry
         });
-    // returning the accessor function to consume
     return accessor;
 };

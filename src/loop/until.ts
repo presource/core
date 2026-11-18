@@ -16,8 +16,10 @@
  *
  * @property condition - The predicate function that returns `true` to stop.
  * @property callback - The function executed each iteration.
- * @property result - The return value from the previous callback invocation.
- * @property count - Zero-based iteration counter.
+ * @property result - Write-only in practice: only a non-breaking pass stores, and it can
+ *   only store the `undefined` that let the loop continue, so a callback never sees a
+ *   defined `result` (docs/issues/0004).
+ * @property count - Zero-based iteration counter; increments only on passes that do NOT break.
  */
 type Argument = {
   condition: Condition;
@@ -47,15 +49,21 @@ type Callback = (args: Argument) => any;
 /**
  * Execute *callback* repeatedly until *condition* returns `true`.
  *
- * Behaves like a `do … while (!condition)` construct: the loop body runs
- * at least once, then the condition is evaluated.  A non-`undefined`
- * callback return also breaks the loop early.
+ * The condition is evaluated in the `while (!condition(params))` header BELOW, so this
+ * is a pre-checked loop: `loopUntil(() => true, cb)` runs the callback ZERO times.
+ * It is `while (!condition)`, not `do … while (!condition)`. A non-`undefined` callback
+ * return breaks the loop early (falsy values like `0`, `''` and `false` all break).
  *
- * @param condition - Predicate that returns `true` to stop looping.
+ * @param condition - Predicate that returns `true` to stop looping. Checked before every
+ *                    pass, including the first; a body break skips the next check.
  * @param callback - Function to execute each iteration.
- * @returns `void` — the loop does not return a value.
+ * @returns `void` — the loop never hands a value back to the caller.
  */
-// TODO: pending - Returns void while loopWhile returns params.result. Inconsistent API
+// TODO: pending - `loopUntil` has no `return` at all, while `loopWhile` returns
+// `params.result` — which its own break-before-store ordering keeps permanently
+// `undefined`. The two therefore agree in outcome and differ only in type; neither can
+// hand a value back to the caller, so callers must hoist a variable outside the loop
+// (docs/issues/0004).
 export const loopUntil = (condition: Condition, callback: Callback) => {
   const params: Argument = {
     condition,
@@ -63,12 +71,16 @@ export const loopUntil = (condition: Condition, callback: Callback) => {
     result: undefined,
     count: 0,
   };
-  // Note: `!condition` makes this the logical inverse of loopWhile
+  // Note: `!condition` makes this the logical inverse of loopWhile — and, like
+  // `loopWhile`, the condition is checked BEFORE the first pass (zero-run when true).
   while (!condition(params)) {
     const result = callback(params);
-    // Non-undefined return is a success signal; exit immediately
+    // Non-undefined return is a success signal; exit immediately. The value is dropped
+    // here (never stored in `params.result`) and the function has no `return`, so it
+    // cannot reach the caller.
     if (result !== undefined) break;
 
+    // Only a continuing pass gets here, so the stored `result` is always `undefined`.
     params.count++;
     params.result = result;
   }

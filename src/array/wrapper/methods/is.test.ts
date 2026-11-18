@@ -3,7 +3,7 @@ import { arrayWrapper } from '@presource/core';
 /**
  * `is` contract (src/array/wrapper/methods/is.ts).
  *
- * Regression focus: the `invalid` case (is.ts:46) used `!valid`, negating the
+ * Regression focus: the `invalid` case in `isFunction`'s stringSwitch used `!valid`, negating the
  * sibling DISPATCHER FUNCTION that stringSwitch injects, so it was always false.
  * It is now `!valid()` — true when at least one element is null/undefined.
  */
@@ -28,7 +28,7 @@ describe('is check function for array Wrapper', () => {
     });
 
     test('is array invalid check is the exact inverse of valid', () => {
-        // REGRESSION (is.ts:46): `!valid` negated a function reference => always false.
+        // REGRESSION (`invalid` in `isFunction`'s stringSwitch): `!valid` negated a function reference => always false.
         expect($array([1, null]).is('invalid')).toBe(true);
         expect($array([1, 2]).is('invalid')).toBe(false);
         expect($array([null, undefined]).is('invalid')).toBe(true);
@@ -88,7 +88,7 @@ describe('is check function for array Wrapper', () => {
     });
 
     test('the filtered slow path keeps judging only the visible population', () => {
-        // Trade-off T6: with a filter active `is` must still route through
+        // Deliberate trade-off: with a filter active `is` must still route through
         // `count()`/`each`, i.e. elements hidden by the filter are not judged.
         const visible = $array([1, 2, 3], { filter: [(data: any) => data.index === 1] });
         expect(visible.is('empty')).toBe(false);

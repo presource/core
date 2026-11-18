@@ -1,8 +1,10 @@
 /**
  * Array utilities barrel export.
  *
- * Re-exports all array-related utilities: constants, creation, iteration,
- * normalization, rotation, shuffling, serialization, and the wrapper module.
+ * Re-exports every array utility the package publishes: creation (`create`),
+ * iteration (`each` / `eachAsync`), normalization (`ensures`), rotation
+ * (`requeue`), shuffling (`shuffle`), and the chainable wrapper module.
+ * There is no constants or serialization module behind this barrel.
  */
 
 export * from './create';

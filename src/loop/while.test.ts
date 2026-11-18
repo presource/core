@@ -8,12 +8,12 @@ describe('While Loop (Basic)', () => {
 
         // Running Condition Check
         const condition = () => value < targetedValue;
-        // Continously Incrementing until Condition is Meet.
-        // Not that undefined will trigger break loop
+        // The body just increments while the condition holds; `undefined` is what keeps the
+        // loop going (a defined return would break it before the condition is consulted).
         loopWhile(condition, () => {
             value++;
         });
-        // Expecting Value to be Targted Value
+        // The loop must land exactly on the target value
         expect(value).toBe(targetedValue);
     });
 
@@ -28,8 +28,8 @@ describe('While Loop (Basic)', () => {
     });
 
     // CONTRACT (the subtle one): `loopWhile` returns `params.result`, and the
-    // `break` at src/loop/while.ts:67 happens BEFORE `params.result = result` on
-    // line 70. So the break value is never stored and never returned — on the
+    // `break` at src/loop/while.ts:73 happens BEFORE the `params.result = result`
+    // assignment (src/loop/while.ts:77). So the break value is never stored and never returned — on the
     // very first pass the returned value is still the initial `undefined`.
     test('Breaking on the first pass returns undefined, not the break value', () => {
         let passes = 0;
@@ -94,7 +94,7 @@ describe('While Loop (Basic)', () => {
     });
 
     // CONTRACT: both the condition and the callback receive the SAME mutable
-    // params record. Key order matches the object literal at src/loop/while.ts:57-62
+    // params record. Key order matches the object literal at src/loop/while.ts:62-67
     // (note it differs from loopUntil's insertion order).
     test('Condition and callback share one params record with the exact key set', () => {
         const conditionSnaps: Record<string, unknown>[] = [];

@@ -2,7 +2,7 @@
  * Presource Core – main barrel export.
  *
  * Re-exports every utility submodule so that consumers can import
- * all helpers from a single entry point (`presource/core`).
+ * all helpers from a single entry point (`@presource/core`).
  */
 export * from './array';
 export * from './boolean';

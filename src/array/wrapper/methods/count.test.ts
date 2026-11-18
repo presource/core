@@ -4,9 +4,9 @@ import { arrayWrapper } from '@presource/core';
  * `count` contract (src/array/wrapper/methods/count.ts).
  *
  * Regression focus: an unrecognised keyword used to throw
- * `TypeError: checkFunction is not a function`. Per the JSDoc (count.ts:26) it now
+ * `TypeError: checkFunction is not a function`. Per the `countFunction` JSDoc it now
  * falls back to counting ALL elements, matching the non-string/default branch.
- * `'object'` was also added to the request union (count.ts:13).
+ * `'object'` was also added to the `RequestString` request union.
  */
 describe('Count function of array Wrapper', () => {
     const $array = arrayWrapper();
@@ -38,7 +38,7 @@ describe('Count function of array Wrapper', () => {
     });
 
     test('unrecognised keyword falls back to counting all elements without throwing', () => {
-        // REGRESSION (count.ts:56-62): previously `checkFunction is not a function`
+        // REGRESSION (`countFunction`'s `COUNT_ALL` fallback): previously `checkFunction is not a function`
         expect(() => $array(fixture).count('bogus' as any)).not.toThrow();
         expect($array(fixture).count('bogus' as any)).toBe(10);
         // Keywords that exist in `keys`/`is` but not in the count map also fall back

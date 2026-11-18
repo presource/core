@@ -21,11 +21,12 @@
  *   add(() => fetchOtherThing());
  *   await completion(); // resolves when both are done
  */
-// GUARD: a non-positive / non-numeric threadCount would deadlock the queue
-// (the dequeue loop `running < threads` never lets a task start,
-// so completion() never resolves). Clamp to at least 1 — same sanitization
-// the bench runner applies to its concurrency option
-// (packages/agentic/bench/src/core/runner.ts runBench).
+// GUARD (`normalizeThreadCount`, the helper declared directly below — `taskCompletion`
+// itself is documented by the header above): a non-positive / non-numeric threadCount
+// would deadlock the queue (the dequeue loop `running < threads` never lets a task
+// start, so completion() never resolves). Clamp to at least 1 — same sanitization the
+// bench runner applies to its concurrency option
+// (packages/underload/bench/src/core/runner.ts runBench).
 const normalizeThreadCount = (threadCount: number): number => {
     const parsed = Math.floor(threadCount);
     return Number.isNaN(parsed) || parsed < 1 ? 1 : parsed;

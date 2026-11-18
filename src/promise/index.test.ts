@@ -4,10 +4,10 @@ import { promiseCreate } from '@presource/core';
 /**
  * src/promise/index.ts barrel contract.
  *
- * Expected runtime surface, hand-derived from the single `export *` line in
- * src/promise/index.ts (line 9): promiseCreate (src/promise/create.ts:14).
- * Despite the module docstring mentioning a "centralized constant", no constant is
- * exported — the native Promise constructor is used directly.
+ * Expected runtime surface, hand-derived from the single `export *` line at the bottom of
+ * src/promise/index.ts: promiseCreate (src/promise/create.ts, `promiseCreate`). The barrel
+ * re-exports only `./create` — there is no exported constant; the native Promise
+ * constructor is used directly — the module docstring in index.ts says exactly that.
  */
 const EXPECTED_EXPORTS = ['promiseCreate'];
 

@@ -15,7 +15,7 @@ export const scriptPause = (time: number) => {
     // PERF (L15): a single `setTimeout` inside the promise executor replaces the
     // `promiseCreate` control object, the `functionDelay` wrapper, and the `{ delay }`
     // argument object + closure `functionDelay` builds for every call
-    // (src/function/delay.ts:17-27 is itself just `setTimeout(() => cb({ delay }), delay)`).
+    // (`functionDelay` in src/function/delay.ts is itself just `setTimeout(() => cb({ delay }), delay)`).
     //
     // Behaviour-preserving, and the fake-timer contract in src/script/pause.test.ts still
     // holds: exactly one timer is registered synchronously at call time, so a 0ms pause is

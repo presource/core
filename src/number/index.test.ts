@@ -4,8 +4,8 @@ import { numberEnsures } from '@presource/core';
 /**
  * src/number/index.ts barrel contract.
  *
- * Expected runtime surface, hand-derived from the single `export *` line in
- * src/number/index.ts (line 6): numberEnsures (src/number/ensures.ts:10).
+ * Expected runtime surface, hand-derived from the single `export * from './ensures'`
+ * line in src/number/index.ts: numberEnsures (src/number/ensures.ts).
  * That is the whole module — one function, no type-only exports.
  */
 const EXPECTED_EXPORTS = ['numberEnsures'];

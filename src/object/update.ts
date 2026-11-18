@@ -16,7 +16,7 @@
  */
 export const objectUpdate = (object: any, update: any): typeof object => {
   // `Object.assign` performs the same own-enumerable-key overwrite the `objectEach` walk did,
-  // but roughly twice as fast (Temp/coding-perf), and this helper sits on many hot paths.
+  // but measured roughly twice as fast, and this helper sits on many hot paths.
   // Three deliberate differences from the previous walk:
   //   1. symbol keys are now copied as well (Object.keys skipped them);
   //   2. a null/undefined source is silently ignored by Object.assign, so the guard below

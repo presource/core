@@ -14,11 +14,11 @@ import { functionChain } from '@presource/core';
  */
 describe('Testing Chain Function - the ability to endlessly chain function calls', () => {
     test('Basic chaining triggers', () => {
-        // The list of the callers
+        // Records what the user callback saw: the keys and the arguments, in fire order
         let chainRecord: any = [];
         let paramsRecord: any = [];
 
-        // For Reseting the Chain Records
+        // Clears both records between cases so every assertion below is exact
         const reset = () => {
             chainRecord = [];
             paramsRecord = [];
@@ -32,14 +32,14 @@ describe('Testing Chain Function - the ability to endlessly chain function calls
             params.forEach((v) => paramsRecord.push(v));
         });
 
-        // Chain Hi
+        // A bare root call has no preceding property read, so no key is recorded
         chain('hi');
 
-        // Expecting Value List to
+        // Only the argument lands: `chainRecord` stays empty, `paramsRecord` holds 'hi'
         expect(chainRecord).toStrictEqual([]);
         expect(paramsRecord).toStrictEqual(['hi']);
 
-        // Triggering
+        // A keyed call appends the key; a call with no arguments records no params
         reset();
         chain.hello();
         expect(chainRecord).toStrictEqual(['hello']);
@@ -169,11 +169,11 @@ describe('Testing Chain Function - the ability to endlessly chain function calls
         expect(records).toStrictEqual([
             // 1: deferred `.a` flush during the `.b` get
             { chain: [], index: 1, key: 'a', params: [] },
-            // 2: line 87 — pending.callback(params) forwards the params ARRAY as one argument
+            // 2: deferred `pending.callback(params)` flush — forwards the params ARRAY as one argument
             { chain: ['b'], index: 1, key: 'a', params: [['nested']] },
             // 3: the nested call's normal callback
             { chain: ['b'], index: 2, key: 'b', params: ['nested'] },
-            // 4: line 87 again — the root call reset index to 0 while pending.index is 2
+            // 4: the deferred flush again — the root call reset index to 0 while pending.index is 2
             { chain: [], index: 2, key: 'b', params: [['root']] },
             // 5: the root call's normal callback
             { chain: [], index: 0, key: null, params: ['root'] }
@@ -199,7 +199,7 @@ describe('Testing Chain Function - the ability to endlessly chain function calls
 
         expect(records).toStrictEqual([
             { chain: [], index: 1, key: 'a', params: [] },
-            // line 87 fires with the stale pending record
+            // the deferred `pending.callback(params)` fires with the stale pending record
             { chain: ['b'], index: 1, key: 'a', params: [['root']] },
             { chain: ['b'], index: 2, key: 'b', params: ['root'] }
         ]);

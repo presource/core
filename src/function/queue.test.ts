@@ -8,19 +8,20 @@ import { functionQueue } from '@presource/core';
  * `functionDelay(cb, item.delay || 0)`, so a per-item `delay` gates that item only.
  *
  * Two behaviours callers must know about (pinned below, source left untouched):
- * - `busy` (queue.ts:53) is only cleared by `continueQueue`, so a drained queue
- *   leaves it `true` and never processes a later enqueue (queue.ts:98-104).
- * - a falsy entry (queue.ts:85) is shifted and skipped without calling
- *   `continueQueue`, which stalls the same queue for the very same reason.
+ * - `busy` (the closure flag inside `functionQueue`) is only cleared by `continueQueue`,
+ *   so a drained queue leaves it `true` and never processes a later enqueue (the guard
+ *   clause at the top of `processQueue`).
+ * - a falsy entry is shifted and skipped without calling `continueQueue` (the shift happens
+ *   before the `if (callback)` guard), which stalls the same queue for the very same reason.
  *
- * CHANGED (defect G1, this round): a REJECTED async item no longer wedges the
- * queue. It is reported through `execute` as `{ queue, response: undefined, error }`
- * and the queue keeps draining, so the rejection is observed instead of turning
- * into an `unhandledRejection` (pinned by the `G1 —` cases below). A callback that
+ * CURRENT BEHAVIOUR: a REJECTED async item no longer wedges the queue. It is
+ * reported through `execute` as `{ queue, response: undefined, error }` and the queue
+ * keeps draining, so the rejection is observed instead of turning into an
+ * `unhandledRejection` (pinned by the rejection cases below). A callback that
  * throws SYNCHRONOUSLY is still not caught — that boundary is pinned too.
  */
 describe('How to use Function Queue - ability to queue function in a list', () => {
-    // We will need to simulate some fate timer first.
+    // Vitest fake timers: the queue's `functionDelay` deferrals are driven by the mocked clock.
     vi.useFakeTimers();
 
     afterEach(() => {
@@ -247,7 +248,7 @@ describe('How to use Function Queue - ability to queue function in a list', () =
 
         vi.runAllTimers();
         // The item never ran, but the `complete` listener still fires because the
-        // deferred `processQueue` finds an empty queue (queue.ts:98-104)
+        // deferred `processQueue` finds an empty queue (its empty-queue branch).
         expect(complete).toHaveBeenCalledTimes(1);
     });
 
@@ -389,7 +390,7 @@ describe('How to use Function Queue - ability to queue function in a list', () =
         const memory = queue();
         memory.queue.unshift(null);
 
-        // `const { delay } = null` (queue.ts:74) throws inside the timer callback
+        // `const { delay } = queue[0]` in `processQueue` throws on a `null` entry
         expect(() => vi.runAllTimers()).toThrow(TypeError);
         expect(order).toStrictEqual([]);
         expect(execute).toHaveBeenCalledTimes(0);
@@ -398,7 +399,7 @@ describe('How to use Function Queue - ability to queue function in a list', () =
     });
 
     // ------------------------------------------------------------------
-    // G1 — a rejected async item must release the queue instead of wedging it
+    // A rejected async item must release the queue instead of wedging it
     // ------------------------------------------------------------------
 
     it('G1 — a rejected async item releases the queue and the run keeps draining', async () => {
@@ -552,7 +553,7 @@ describe('How to use Function Queue - ability to queue function in a list', () =
         queue.kill();
         seen.push('killed');
 
-        // PINNED CONTRACT (unchanged by the G1 fix, which only added the rejection
+        // PINNED CONTRACT (unchanged by the rejection-handling change, which only added the
         // twin of the settlement handler): `kill()` clears pending items but does not
         // cancel a promise that is already in flight. When it settles, the registered
         // handler still fires `execute`, releases `busy`, and the now-empty queue

@@ -3,9 +3,9 @@ import { arrayWrapper } from '@presource/core';
 /**
  * `get` contract (src/array/wrapper/methods/get.ts).
  *
- * `get` delegates to `instance.keys(request)` (get.ts:30) and maps the resolved
- * indexes onto the element array, so the numeric-comparator fix in keys.ts:107
- * is observable here as true index ordering of the returned elements.
+ * `get` delegates to `instance.keys(request)` and maps the resolved
+ * indexes onto the element array, so the ascending-order guarantee of keys.ts's single
+ * collection pass is observable here as true index ordering of the returned elements.
  */
 describe('Get Function of Array Wrapper', () => {
     const $array = arrayWrapper();

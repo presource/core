@@ -24,10 +24,10 @@ import { isFunction } from '../is';
 
 /**
  * Argument object passed to case callbacks.
- * Includes the matched value, a default getter, and a getter for every other case key.
+ * Includes the matched value, a `default` getter, and a reloop closure for every other case key.
  */
 type Argument<T> = {
-    /** The original matched value as a string. */
+    /** The matched value, handed through unchanged (a number when a numeric value is dispatched; the declared `string` is only the common case). */
     value: string;
     /** Returns the default case value. */
     default: (value: any) => any;
@@ -59,7 +59,7 @@ type Structure = <T extends { [key: string]: any }>(value: number | string | und
  *
  * @param value - The matched value.
  * @param cases - The full cases map.
- * @returns Argument object with `value`, `default`, and per-case getters.
+ * @returns Argument object with one reloop closure per case key, plus `value` and a `default` getter.
  */
 const getParams: Structure = (value, cases) => {
     // Own enumerable keys in `Object.keys` order (integer keys first) - the exact

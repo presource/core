@@ -1,15 +1,15 @@
 import { stringSwitch, stringSwitchAsync } from '@presource/core';
 
 /**
- * Contract source: src/string/switch.ts (lines 52-99).
+ * Contract source: src/string/switch.ts - `getParams` (64-85), `stringSwitch` (98-103), `stringSwitchAsync` (115-121).
  *
  * Behaviour nailed down here:
- * - `objectHasKey` is an own-property check (object/has.ts:15), so inherited keys
+ * - `objectHasKey` (src/object/has.ts) is an own-property check, so inherited keys
  *   never match and `cases.default` is read through the normal property lookup
  *   (a `default` inherited from a prototype IS reachable as a fallback).
  * - Non-function entries are returned untouched - including `false`, `0`, `null`,
  *   objects and arrays - and no argument object is built for them.
- * - `getParams` (switch.ts:52-63) maps EVERY case key into a closure
+ * - `getParams` maps EVERY case key into a closure
  *   `() => stringSwitch(key, cases)`: the closure ignores its arguments and
  *   re-dispatches using the KEY itself as the new value.
  * - `params.default` is assigned after the map, so it returns the RAW `cases.default`
@@ -134,7 +134,7 @@ describe('String Switch Functionality', () => {
         const routes = { a: (params: any) => params, b: 2, default: 3 };
         const params = stringSwitch('a', routes) as any;
 
-        // objectMap keys first ('a', 'b', 'default'), then `value` is appended (switch.ts:60)
+        // Case keys in `Object.keys` order ('a', 'b', 'default'), then `value` is appended; `default` was already a case key, so the getParams assignment overwrites it in place
         expect(Object.keys(params)).toStrictEqual(['a', 'b', 'default', 'value']);
         expect(params.value).toBe('a');
         expect(typeof params.a).toBe('function');
@@ -224,7 +224,7 @@ describe('Async String Switch Functionality', () => {
     });
 
     test('a synchronous handler returning a promise is still awaited', async () => {
-        // `return await callback(...)` (switch.ts:98) flattens the thenable
+        // `return await callback(...)` in `stringSwitchAsync` (switch.ts:120) flattens the thenable
         expect(await stringSwitchAsync('a', { a: () => Promise.resolve('thenable') })).toBe('thenable');
     });
 
@@ -238,7 +238,7 @@ describe('Async String Switch Functionality', () => {
         const routes = { a: async (params: any) => params, b: 2 };
         const params = (await stringSwitchAsync('a', routes)) as any;
 
-        // No `default` key exists in the map, so objectMap contributes only 'a' and 'b'
+        // No `default` key exists in the map, so the getParams `Object.keys` loop contributes only 'a' and 'b'
         expect(Object.keys(params)).toStrictEqual(['a', 'b', 'value', 'default']);
         expect(params.value).toBe('a');
         expect(params.b()).toBe(2);
@@ -258,12 +258,12 @@ describe('Async String Switch Functionality', () => {
 });
 
 /**
- * Perf-wave contract pins for the reworked `getParams` (T-A).
+ * Contract pins for the reworked `getParams`.
  *
  * The argument object is still a fresh plain object carrying one reloop closure per
  * own enumerable case key (in `Object.keys` order), then `value`, then `default` -
  * byte-identical to the `objectMap` build it replaces (336/336 legacy parity checks
- * plus 26 cumulative mutation-parity steps in Temp/coding-dispatch). The lazy
+ * plus 26 cumulative mutation-parity probes). The lazy
  * `Proxy` variant measured 0.5x once a callback touched the object, so this shape
  * is what stays.
  *

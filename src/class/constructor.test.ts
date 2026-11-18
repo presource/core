@@ -1,7 +1,7 @@
 import { classConstructor } from '@presource/core';
 
 /**
- * Contract source: src/class/constructor.ts (lines 4-6) - `Object.getPrototypeOf(instance).constructor`.
+ * Contract source: `classConstructor` in src/class/constructor.ts - `Object.getPrototypeOf(instance).constructor`.
  *
  * Behaviour nailed down here:
  * - Primitives are auto-boxed by `Object.getPrototypeOf`, so `5` resolves to `Number`, etc.
@@ -19,7 +19,7 @@ describe('Class Constructor', () => {
     }
 
     test('Creating a class from an instance', () => {
-        // Creating an annonymous class
+        // Creating an instance of an anonymously declared (but named) class
         const example = new (class A {
             name = 'john';
             gender = 'male';

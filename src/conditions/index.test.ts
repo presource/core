@@ -6,8 +6,8 @@ import { ifThen } from '@presource/core';
  *
  * Expected runtime surface, hand-derived from the two `export *` lines in
  * src/conditions/index.ts (lines 8-9) and the runtime exports of each source file:
- *   ./if  -> ifTrue  (src/conditions/if.ts:21)
- *          -> ifFalse (src/conditions/if.ts:35)
+ *   ./if  -> ifTrue  (src/conditions/if.ts:20)
+ *          -> ifFalse (src/conditions/if.ts:36)
  *   ./then -> ifThen (src/conditions/then.ts:30)
  *
  * `Condition` / `Callback` in then.ts are type-only and never appear at runtime.
@@ -30,7 +30,7 @@ describe('conditions barrel (src/conditions/index.ts)', () => {
 
     test('the re-exported implementations still behave', () => {
         // ifTrue / ifFalse coerce through `!!` and return the callback result, or
-        // undefined when the branch does not match (if.ts:21-45).
+        // undefined when the branch does not match (if.ts:20-40).
         expect(conditionsModule.ifTrue('x')).toBe(true);
         expect(conditionsModule.ifTrue('')).toBeUndefined();
         expect(conditionsModule.ifFalse('')).toBe(true);

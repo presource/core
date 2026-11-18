@@ -301,7 +301,7 @@ describe('Object Switch Functionality', () => {
     });
 
     test('an inherited default still becomes the fallback but never joins the params map', () => {
-        // G19: mirror of string/switch.test.ts:105. The fallback used to come out of the
+        // Mirror of the inherited-default test in string/switch.test.ts. The fallback used to come out of the
         // `{ default: fallback, ...rest }` destructuring, i.e. a normal property read that walks
         // the prototype chain; the rewritten loop keeps that by reading `cases.default` directly.
         const protoCases: any = Object.create({ default: () => 'inherited-default-fallback' });

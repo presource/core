@@ -6,9 +6,9 @@ import { loopFor, loopWhile, loopUntil } from '@presource/core';
  *
  * Expected runtime surface, hand-derived from the three `export *` lines in
  * src/loop/index.ts (lines 8-10) and the runtime exports of each source file:
- *   ./for   -> loopFor (for.ts:90), loopForAsync (for.ts:129)
- *   ./until -> loopUntil (until.ts:59)
- *   ./while -> loopWhile (while.ts:56)
+ *   ./for   -> loopFor (for.ts:96), loopForAsync (for.ts:135)
+ *   ./until -> loopUntil (until.ts:67)
+ *   ./while -> loopWhile (while.ts:61)
  *
  * `Structure` / `StructureAsync` / `Callback` / `Condition` are type-only.
  */

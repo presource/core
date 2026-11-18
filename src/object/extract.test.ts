@@ -74,17 +74,16 @@ describe('objectExtract test and requirements', () => {
     });
 
     test('should return undefined for invalid bracket notation (no digits in brackets)', () => {
-        // Covers extract.ts line 40: `if (!match)` when the bracket regex does not match.
-        // A segment like "foo[bar]" (non-digit inside brackets) fails the regex
-        // /^([^\[]*)((?:\[\d+\])*)$/ because \d+ requires digits.
+        // `parseSegment`'s `if (!match)` guard: a segment like "foo[bar]" (non-digit inside
+        // brackets) fails /^([^\[]*)((?:\[\d+\])*)$/ because \d+ requires digits.
         expect(objectExtract({ foo: { bar: 'value' } }, 'foo[bar]')).toBeUndefined();
     });
 
     test('should handle segment with empty key and bracket index only', () => {
-        // Covers extract.ts line 46: `key ? ... : pointer` when key is empty string.
+        // `parseSegment`'s `key ? ... : pointer` ternary when key is empty string.
         // A segment like "[0]" has key='' (falsy) and indexes='[0]'.
         // value is set to pointer itself, then bracket access resolves the index.
-        // This also covers line 49 `if (indexes)` true branch for this segment shape.
+        // This also exercises the `if (indexes)` true branch for this segment shape.
         const target = { items: [10, 20, 30] };
         // Access via path 'items[0]' — segment 'items[0]' has key='items', indexes='[0]'
         expect(objectExtract(target, 'items[0]')).toBe(10);
@@ -93,7 +92,8 @@ describe('objectExtract test and requirements', () => {
     });
 
     test('should handle path starting with bracket (empty leading key)', () => {
-        // Covers extract.ts line 46: key='' branch where `value = pointer`.
+        // `parseSegment`'s `key ? ... : pointer` ternary again, this time via a leading
+        // bracket: key='' branch where `value = pointer`.
         // A path segment "[0]" with no leading key results in key='' (falsy),
         // so value = pointer, then bracket access processes the index.
         // NOTE: This requires the root object to be an array.
@@ -143,9 +143,9 @@ describe('objectExtract test and requirements', () => {
     });
 
     test('should resolve every numeric bracket step in order', () => {
-        // extract.ts:49-56 walks each `[n]`; the digit scan always yields at least one match for
-        // the `((?:\[\d+\])*)` capture group, so the `?? []` fallback the old line 38 carried was
-        // unreachable dead code and has been removed
+        // `parseSegment`'s `if (indexes)` block walks each `[n]`; the digit scan always yields at
+        // least one match for the `((?:\[\d+\])*)` capture group, so the `?? []` fallback the
+        // earlier implementation carried was unreachable dead code and has been removed
         const source = { m: [[[7]], [[8], [9]]] };
         expect(objectExtract(source, 'm[0][0][0]')).toBe(7);
         expect(objectExtract(source, 'm[1][1][0]')).toBe(9);
@@ -230,7 +230,7 @@ describe('objectExtract test and requirements', () => {
     });
 
     test('should return undefined for roots that are not plain objects', () => {
-        // G12: extract.ts:46 gates key access on `isObject`, which is constructor-strict
+        // `parseSegment` gates key access on `isObject`, which is constructor-strict
         // (typeConstructor(value) === Object), so neither an array root nor a class-instance
         // root can be drilled into even though the property physically exists.
         expect(objectExtract([{ n: 1 }], '0.n')).toBeUndefined();

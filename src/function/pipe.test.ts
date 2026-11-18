@@ -122,7 +122,7 @@ describe('Function piping test', () => {
     });
 
     // ------------------------------------------------------------------
-    // G15 PINNED CONTRACT — `functionPipe` is synchronous by contract: no step is ever
+    // Pinned contract — `functionPipe` is synchronous by contract: no step is ever
     // `await`ed, so an async step hands its Promise object to the next function (and to
     // the caller, if it is the last step). src/function/pipe.ts has no async path at all.
     // ------------------------------------------------------------------

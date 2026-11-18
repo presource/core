@@ -26,7 +26,7 @@ describe('Object Mapping Function (similiar to Array.map', () => {
     });
 
     // ----------------------------------------------------------------------------------------
-    // Edge cases. Contract source: src/object/map.ts:30-47. The callback receives the full
+    // Edge cases. Contract source: `objectMap` in src/object/map.ts. The callback receives the full
     // objectEach parameter object, keys are always preserved, and the accumulator is new.
     // ----------------------------------------------------------------------------------------
 
@@ -159,7 +159,7 @@ describe('Object Map Keys Function', () => {
     });
 
     // ----------------------------------------------------------------------------------------
-    // Edge cases. Contract source: src/object/map.ts:60-75. Keys come from
+    // Edge cases. Contract source: `objectMapKeys` in src/object/map.ts. Keys come from
     // `callback(data) ?? key`, so only null/undefined fall back to the original key, and the
     // original value is always carried over untouched (by reference for objects).
     // ----------------------------------------------------------------------------------------
@@ -210,7 +210,7 @@ describe('Object Map Keys Function', () => {
     });
 
     test('null and undefined mapper results both fall back to the original key', () => {
-        // map.ts:71 uses `??`, so only nullish results keep the original key
+        // `objectMapKeys` writes with `callback(data) ?? key`, so only nullish results keep the original key
         expect(objectMapKeys({ a: 1, b: 2 }, ({ key }) => (key === 'a' ? null : undefined) as any)).toStrictEqual({
             a: 1,
             b: 2

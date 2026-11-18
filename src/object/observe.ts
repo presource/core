@@ -4,7 +4,7 @@
  * Creates a reactive observer for an object using a Proxy. Every property
  * `get` or `set` operation fires a callback with full context.
  *
- * Hot-path shape (perf issue H4): one Proxy is memoized per raw object and a level records its
+ * Hot-path shape: one Proxy is memoized per raw object and a level records its
  * path/depth as a plain pair that a hand-off re-stamps, so a deep read such as `observed.a.b.c`
  * no longer allocates a fresh Proxy plus a fresh recursion chain on every hop. Exactly one path
  * array is still built per emitted event, because that is what the callback contract exposes.
@@ -116,12 +116,12 @@ export const objectObserve: ObjectObserve = (item, callback, chain = { depth: 0,
             const path = [...level.prefix, key];
             // If the value is not defined, falling back to `{}` lets deep chains continue
             const nested = value !== undefined ? value : {};
-            // This is the current value
+            // The value already stored at this key, i.e. what the write is about to replace
             const current = object[key];
             // Write-on-read materialization: creates missing keys and copies inherited keys (e.g.
             // `constructor`) onto the target, which is what makes `observed.a.b.c = 1` work
             object[key] = nested;
-            // Setting the params
+            // Fire the observer with this event's payload
             callback({ key, value, current, object, method, depth: level.depth, path });
             // The callback may have replaced the value, so it is re-read before being wrapped
             const updatedValue = object[key];
@@ -151,10 +151,10 @@ export const objectObserve: ObjectObserve = (item, callback, chain = { depth: 0,
             const current = object[key];
             // Updating value on the raw target
             object[key] = value;
-            // Creating the params
+            // Fire the observer with this event's payload
             callback({ key, value, current, object, method, depth: level.depth, path });
 
-            // Return the necessary boolean value
+            // A Proxy set trap must report success, otherwise the write is rejected
             return true;
         }
     });
@@ -177,11 +177,10 @@ export const objectObserve: ObjectObserve = (item, callback, chain = { depth: 0,
         return level;
     };
 
-    // Constructing the root wrapper. `objectProxy` throws before anything is cached if `item` is
+    // Build the root wrapper. `objectProxy` throws before anything is cached if `item` is
     // not object-like, so only valid WeakMap keys ever reach `levels.set`.
     root.proxy = objectProxy(item, createTriggers(item, root));
     levels.set(item, root);
 
-    // Return the Proxy Object
     return root.proxy;
 };

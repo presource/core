@@ -3,10 +3,12 @@ import { dataClone } from '@presource/core';
 /**
  * Contract source: `src/data/clone.ts`.
  *
- * `dataClone` dispatches on `typeSwitch` (clone.ts:42-56), so ONLY values whose typeName is
- * exactly `array` or `object` are rebuilt. Everything else — Date, Map, Set, WeakMap, RegExp,
- * class instances, boxed primitives, functions, symbols, bigints and prototype-less objects —
- * falls into the `default` branch and is returned BY REFERENCE (clone.ts:55).
+ * `dataClone` dispatches on the `Array.isArray` / `isObject` predicates, so ONLY arrays and
+ * plain objects (`constructor === Object`) are rebuilt. Everything else — Date, Map, Set, WeakMap,
+ * RegExp, class instances, boxed primitives, functions, symbols, bigints and prototype-less
+ * objects — skips both guards and is handed back BY REFERENCE from the final return.
+ * (The "old `array`/`object` case" wording in the source comments refers to the `typeSwitch`
+ * dispatch this replaced.)
  */
 describe('Data cloning', () => {
     test('Cloning primitive datas', () => {
@@ -295,7 +297,8 @@ describe('dataClone property descriptor handling', () => {
 });
 
 describe('dataClone circular structures', () => {
-    // There is no visited-set (the `cache` parameter is only in the type signature, clone.ts:39),
+    // There is no visited-set (the `cache` parameter is only in the `Structure` type signature,
+    // never in the implementation),
     // so a self-referencing plain object recurses until the stack blows up.
     test('should throw RangeError for a self-referencing object', () => {
         const circular: Record<string, any> = { a: 1 };

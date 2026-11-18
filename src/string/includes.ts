@@ -72,7 +72,7 @@ const toDelegate = ({ value: caseValue }: { value: any }) => (isFunction(caseVal
  * @returns Object of matched keys and their resolved values.
  */
 export const stringIncludes: Structure = (value, cases) => {
-    // TODO: pending - Return type is any but Structure declares { [key in keyof T]: any }. Mismatch
+    // TODO: pending - `Structure` types the result as `{ [key in keyof T]: any }` (every case key present), but only the keys that actually matched exist at runtime, so every key is effectively optional - the accurate type is `Partial<{ [key in keyof T]: any }>`; the `any` on the local `found` below is inert next to that signature
     const found: any = {};
 
     // The delegation object is only observable to callback cases, so it is built

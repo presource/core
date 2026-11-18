@@ -4,10 +4,10 @@ import { dataClone } from '@presource/core';
 /**
  * src/data/index.ts barrel contract.
  *
- * Expected runtime surface, hand-derived from the two `export *` lines in
- * src/data/index.ts (lines 7-8) and the runtime exports of each source file:
- *   ./clone -> dataClone (src/data/clone.ts:40)
- *   ./list  -> dataList  (src/data/list.ts:78)
+ * Expected runtime surface, hand-derived from the `export *` lines in
+ * src/data/index.ts and the runtime exports of each source file:
+ *   ./clone -> dataClone (src/data/clone.ts)
+ *   ./list  -> dataList  (src/data/list.ts)
  *
  * `Structure` (clone.ts) and `DataList` (list.ts) are type-only.
  */

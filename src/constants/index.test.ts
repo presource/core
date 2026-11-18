@@ -5,7 +5,7 @@ import * as constants from './index';
  *
  * This file was 0 bytes before the constants gap was fixed, so every documented
  * constant resolved to `undefined` through `@presource/core`. It now publishes exactly
- * one re-export line (`export * from './strings'`, index.ts:11) whose runtime surface
+ * one re-export line (`export * from './strings'`, index.ts:8) whose runtime surface
  * is the six literals declared in src/constants/strings.ts:13-28:
  *   EMPTY_STRING(13) SPACE_STRING(16) NUMBERS_STRING(19) ALPHABET_STRING(22)
  *   NULL_STRING(25) UNDEFINED_STRING(28)

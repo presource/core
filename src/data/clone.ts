@@ -3,8 +3,8 @@ import { isObject } from '../is';
 /**
  * Deep cloning utilities.
  *
- * Recursively clones arrays, plain objects, and primitive values,
- * producing a fully independent copy with no shared references.
+ * Recursively clones arrays and plain objects into fresh containers; everything
+ * else falls through by reference (see the dispatch notes below), so those stay shared.
  */
 
 /**
@@ -47,7 +47,7 @@ type Structure = <T>(data: T, cache?: any[]) => T;
  *
  * @typeParam T - The type of the value being cloned.
  * @param data - The value to clone (primitive, array, or plain object).
- * @returns A new, independent copy of `data`.
+ * @returns A clone of `data`: fresh arrays/plain objects, everything else by reference.
  *
  * @example
  * ```ts

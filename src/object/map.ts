@@ -21,6 +21,9 @@ type Argument<T> = {
 /**
  * Maps over every property of an object, transforming each value while keeping keys.
  *
+ * The callback receives the full `objectEach` payload; the `Argument` type below declares
+ * the guaranteed subset of it.
+ *
  * @typeParam T - The type of the source object.
  * @typeParam V - The resulting value type after transformation.
  * @param object - The object to iterate.
@@ -31,18 +34,17 @@ export const objectMap = <T extends {}, V>(
     object: T,
     callback: (args: Argument<T>) => V
 ) => {
-    // Constructing the Return result
+    // The output object is assembled key by key below
     const result: any = {};
 
-    // Looping Through Each Object
+    // Walk every own property through objectEach
     objectEach(object, (data) => {
-        // Extracting Key out of Data
+        // Only the key is read out of the objectEach payload
         const { key } = data;
-        // Setting Callback Result to Key
+        // The callback's return value becomes the value for that key
         result[key] = callback(data);
     });
 
-    // Returning the Result Information
     return result as { [key in keyof T]: V };
 };
 
@@ -61,15 +63,14 @@ export const objectMapKeys = <T extends {}, V extends string>(
     object: T,
     callback: (args: Argument<T>) => V
 ) => {
-    // The Resulting Object
+    // The output object is assembled key by key below
     const result: any = {};
 
     objectEach(object, (data) => {
-        // Extracting Key Data
+        // The original key is needed as the fallback, the value is carried over unchanged
         const { key, value } = data;
-        // Updating the Result
+        // The callback's return value names the new key; `??` keeps the original on nullish
         result[callback(data) ?? key] = value;
     });
-    // Return the Result
     return result as { [key in V]: T[keyof T] };
 };

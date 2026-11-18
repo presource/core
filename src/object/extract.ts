@@ -64,21 +64,26 @@ const parseSegment = (pointer: any, segment: string): any => {
  *
  * - **string**: Walks the dot-separated path (with optional `[n]` bracket notation) and returns the value.
  * - **array**: Maps over each element and recursively extracts, returning an array of results.
- * - **number**: Currently returns `undefined` (reserved for future use).
+ * - **number**: Has no defined semantics and always returns `undefined` (see the number branch below).
+ * - Anything else (boolean, null, undefined, object, function): `undefined`, because no case matches
+ *   and this dispatch declares no `default` bucket.
  *
  * @param object - The object to extract from.
  * @param extract - A path string, array of paths, or number.
  * @returns The extracted value(s), or `undefined`.
  */
 export const objectExtract: ObjectExtract = (object: any, extract: any) => {
-    // Depending on what value extract is, the result could be different
+    // Dispatch on the runtime type of the `extract` request: each branch answers in a
+    // different shape (single drilled value vs. one mapped array).
     const result: any = typeSwitch(extract, {
         number: () => {
-            // TODO: pending - Number case unimplemented. Decide what behavior is expected
-            // !Not sure what to do with number yet
+            // TODO: pending - Number requests have no defined semantics and always yield
+            // `undefined`, including as elements of an array request; the case exists only so the
+            // `number` delegation helper stays callable from the array branch below. Deciding the
+            // intended behaviour is still open.
             return undefined;
         },
-        // If String. Use Drilling path. If only single path, better to use direct access!
+        // If String. Use the drilling path. For a single fixed path, direct access is better!
         string: ({ value }) => {
             let pointer = object;
             // Split on "." then parse each segment for bracket notation
@@ -89,7 +94,9 @@ export const objectExtract: ObjectExtract = (object: any, extract: any) => {
             return pointer;
         },
         array: ({ value: values, string, number, array }) => {
-            // if array, accessing multiple instances
+            // If Array: one result per element. The inner dispatch selects the element's type and
+            // each handler forwards to the matching helper from the OUTER case map (`number`,
+            // `string` and `array` are that map's delegation hooks); `default` covers the rest.
             return values.map((element: any) => {
                 return typeSwitch(element, {
                     number: () => number(element),

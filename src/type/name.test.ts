@@ -115,7 +115,7 @@ describe('typeName', () => {
 });
 
 /**
- * Perf-wave contract pins for the constructor-name cache (T-A).
+ * Perf-wave contract pins for the constructor-name cache.
  *
  * `typeName` now memoises the resolved name per constructor in a module-level
  * WeakMap (it sits on the hot path of every typeSwitch / typeSwitchAsync /

@@ -4,8 +4,8 @@
  * Evaluates whether the wrapped array satisfies a given condition,
  * such as being empty, filled, valid, or invalid.
  *
- * PERFORMANCE NOTE (L3): `empty`/`filled`/`valid`/`invalid` normally run full
- * `instance.count()` passes. That is deliberate (trade-off T6) — `count` walks
+ * PERFORMANCE NOTE: `empty`/`filled`/`valid`/`invalid` normally run full
+ * `instance.count()` passes. That is deliberate — `count` walks
  * `instance.each`, so active `select` predicates narrow the population. When the
  * wrapper provably has NO filter predicates, the early-exit scans below are
  * equivalent and stop at the first decisive element instead of walking the
@@ -71,7 +71,7 @@ export const isFunction: IsFunction = (params, request) => {
     const { instance, element, config } = params;
 
     // Cheap, provable "no filters active" detection: `config.filter` is the ONLY
-    // filter source (`each.ts:44` reads `config.filter || []`), and a root
+    // filter source (src/array/wrapper/methods/each.ts:44 reads `config.filter || []`), and a root
     // wrapper gets `{}` as config, so the guard must tolerate a missing filter.
     // With no predicates, `each` visits every index 0..length-1 exactly once, so
     // a plain scan sees the identical population; with predicates we must keep

@@ -26,14 +26,14 @@ type Arguments = {
 type Callback = {
   /**
    * Returns a custom key for the flattened entry. Receives the full scan `Arguments`
-   * payload. Any falsy result falls back to the joined path (flatten.ts:77 `||`).
+   * payload. Any falsy result falls back to the joined path (the `newKey` `||` in `objectFlatten`).
    */
   key?: (args: Arguments) => string;
   /**
    * Returns a custom value for the flattened entry.
    *
    * NOTE: at runtime this receives the raw leaf value, NOT the `Arguments` object the
-   * `key` callback receives (flatten.ts:78 passes `value` only). The parameter type is
+   * `key` callback receives (`objectFlatten` passes only `value` to `callback.value`). The parameter type is
    * kept as-is for API compatibility. Any falsy result (0, '', false, null, undefined)
    * is discarded in favour of the original leaf value, so a value callback can never
    * flatten a leaf to a falsy value.
@@ -56,18 +56,17 @@ type Structure = (object: { [key: string]: any }, callback?: Callback) => { [key
  */
 export const objectFlatten: Structure = (object, callback) => {
   const result: { [key: string]: any } = {};
-  // Using Object Scan function
+  // Walk the tree with objectScan and collect the leaves below
   objectScan(object, (data) => {
-    // Extracting the Data
     const { value, key, path } = data;
-    // Checking Whether value is an object or not. Objects are only walked through, never
+    // Checking whether value is an object or not. Objects are only walked through, never
     // emitted as entries, so a branch that holds no leaf at all (e.g. `{ a: {} }`) vanishes
     // from the flattened result entirely - flatten/unflatten round-trips are lossy there.
     if (!isObject(value)) {
-      // value must not be an object
-      // Adding the Current Key to the Path
+      // Only leaf (non-object) values become entries
+      // The current key extends the path the entry is keyed by
       if (key) {
-        // Only if key is a valid. Empty string are not counted
+        // A truthy key only: an empty-string key is not appended to the path
         path.push(key as string);
       }
 
@@ -76,11 +75,10 @@ export const objectFlatten: Structure = (object, callback) => {
       // callback receives only the raw leaf value (see the Callback.value note above).
       const newKey = callback?.key?.(data) || path.join('.');
       const newValue = callback?.value?.(value) || value;
-      // Updating the Result with Path
+      // The joined path (or custom key) addresses the entry in the flat result
       result[newKey] = newValue;
     }
   });
 
-  // Returning the Final Result
   return result;
 };

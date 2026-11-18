@@ -3,16 +3,19 @@ import { dataList } from '@presource/core';
 /**
  * Contract source: `src/data/list.ts`.
  *
- * Callback payload is exactly `{ id, list, key, previous, value }` (list.ts:98-104):
- *  - `id`       → `path[0]`, the entry key at the root of the list (hoisted at list.ts:86)
+ * Callback payload is exactly `{ id, list, key, previous, value }` (the `args` object
+ * `triggerCallback` builds):
+ *  - `id`       → `path[0]`, the entry key at the root of the list (hoisted once per set trap)
  *  - `list`     → the ORIGINAL source object passed to `dataList` (identity, not a copy)
  *  - `key`      → dotted path of the assignment, including the entry id
- *  - `previous` → the value the assigned property held BEFORE the write (list.ts:102 `current`)
+ *  - `previous` → the value the assigned property held BEFORE the write (the observer's
+ *                 `current`, mapped onto `previous` in `args`)
  *  - `value`    → the leaf value that was written
  *
- * Only `method === 'set'` traps fire callbacks (list.ts:81), and the structure lookup uses the
- * path with the entry id stripped (list.ts:120 / list.ts:136), so root-level assignments never
- * resolve a callback. Plain-object values are the only ones flattened (list.ts:115).
+ * Only `method === 'set'` traps fire callbacks, and the structure lookup uses the path with the
+ * entry id stripped (`path.slice(1)` in both the flatten and the single-callback branch), so
+ * root-level assignments never resolve a callback. Plain-object values are the only ones
+ * flattened (the `isObject(value)` branch).
  */
 
 /** Captures every callback invocation, including the exact argument object it received. */
@@ -182,8 +185,9 @@ describe('dataList callback payload', () => {
         ]);
     });
 
-    // list.ts:115-128: an object value is flattened and each leaf fires separately, in the
-    // insertion order of the assigned object (nested leaves last because objectScan descends in order).
+    // dataList's `isObject(value)` flatten branch (src/data/list.ts): an object value is
+    // flattened and each leaf fires separately, in the insertion order of the assigned object
+    // (nested leaves last because `objectFlatten` recurses depth-first in insertion order).
     test('should fire one event per flattened leaf in insertion order for an object assignment', () => {
         const source: any = {};
         const { events, record } = createRecorder();
@@ -232,7 +236,7 @@ describe('dataList callback payload', () => {
 });
 
 describe('dataList values that do not match a structure callback', () => {
-    // Arrays hit the non-plain branch of list.ts:129-139 with a single-segment pointer, and the
+    // Arrays hit the non-plain `else` branch of dataList (src/data/list.ts) with a single-segment pointer, and the
     // extracted structure node is not a function, so nothing fires even though the write lands.
     test('should not fire for an array value but still write it to the source', () => {
         const source: any = {};
@@ -302,7 +306,7 @@ describe('dataList values that do not match a structure callback', () => {
     });
 
     // A function value is not a plain object, so it takes the single-callback branch
-    // (list.ts:129-139) and is reported like any other leaf.
+    // (the non-plain `else` branch of dataList) and is reported like any other leaf.
     test('should fire with a function value for a matched leaf path', () => {
         const source: any = {};
         const { events, record } = createRecorder();
@@ -319,8 +323,8 @@ describe('dataList values that do not match a structure callback', () => {
 });
 
 describe('dataList structure template stays live', () => {
-    // The callback is resolved from the template on every mutation (objectExtract at
-    // list.ts:96), so replacing a callback after `dataList` was created takes effect
+    // The callback is resolved from the template on every mutation (`objectExtract` inside
+    // `triggerCallback`), so replacing a callback after `dataList` was created takes effect
     // immediately. This is the contract that rules out caching a resolved callback per pointer.
     test('should pick up a structure callback swapped after the list was created', () => {
         const source: any = {};
@@ -346,7 +350,7 @@ describe('dataList structure template stays live', () => {
 
 describe('dataList proxy read behaviour', () => {
     // objectObserve auto-vivifies missing keys on READ (observe.ts get trap) but the 'get' method
-    // is ignored by dataList (list.ts:81), so no callback fires.
+    // is ignored by dataList (the `method === 'set'` guard), so no callback fires.
     test('should auto-vivify an empty object on reading a missing key without firing callbacks', () => {
         const source: any = {};
         const { events, record } = createRecorder();
@@ -360,7 +364,7 @@ describe('dataList proxy read behaviour', () => {
     });
 
     // Every read of an object value hands back the SAME memoized wrapper (src/object/observe.ts
-    // keeps one Proxy per raw object — intentional behaviour change for perf issue H4), and it
+    // keeps one Proxy per raw object — an intentional behaviour change), and it
     // is never the raw nested object itself.
     test('should return the memoized proxy for object values and raw values for primitives', () => {
         const source: any = { a: { biography: { age: 5 } } };
@@ -398,7 +402,7 @@ describe('dataList special keys and deletion', () => {
         expect(source['0']).toBe('zero');
     });
 
-    // The non-plain branch (list.ts:129-139) calls path.join('.'), which throws for a symbol key
+    // The non-plain `else` branch of dataList calls path.join('.'), which throws for a symbol key
     // AFTER the value has already been written to the source under that symbol.
     test('should throw when a symbol key is assigned and still record it on the source', () => {
         const source: any = {};

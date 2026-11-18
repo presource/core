@@ -274,9 +274,9 @@ describe('jsonComplete', () => {
         expect(jsonComplete('\n')).toBeUndefined();
     });
 
-    // --- Unrecoverable fragments: every one of these reaches complete.ts:167-169 ---
+    // --- Unrecoverable fragments: every one of these reaches the final `catch` in jsonComplete ---
     // Each input produces a `completed` string that is STILL invalid JSON, so the second
-    // `JSON.parse` throws and the final `catch` returns `undefined` (coverage for line 168).
+    // `JSON.parse` throws and that `catch` returns `undefined`.
     test('should return undefined when the repaired string is still invalid', () => {
         // Trailing garbage after a complete value: rule 4 has nothing to close.
         expect(jsonComplete('{"a":1}:junk')).toBeUndefined();

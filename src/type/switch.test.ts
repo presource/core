@@ -1,7 +1,8 @@
 import { typeSwitch } from '@presource/core';
 
 describe('Type Switch Checking', () => {
-    // Checking if Type is Correct
+    // Every documented case key routes on the value's runtime type name, and a
+    // value with no matching key falls through to `default`.
     test('Checking type returned correctly', () => {
         // Undefined
         expect(
@@ -34,25 +35,26 @@ describe('Type Switch Checking', () => {
             )
         ).toBe('a');
 
-        // Not Found. Undefined
+        // No `string` key is declared, so the unmatched value falls through to `default`
         expect(typeSwitch('a', { default: ({ value }) => value })).toBe('a');
     });
 
-    // Checking the nested type are correct
+    // Each case below dispatches on the runtime type name of the value and asserts
+    // the matched handler is handed that exact value.
     test('Checking nested type are correct', () => {
-        // Checking String
+        // A string primitive routes to the `string` case
         typeSwitch('string', {
             string: ({ value }) => {
                 expect(value).toBe('string');
             }
         });
-        // Checking for Number
+        // A number primitive routes to the `number` case
         typeSwitch(10, {
             number: ({ value }) => {
                 expect(value).toBe(10);
             }
         });
-        // Checking for Boolean
+        // Both boolean literals route to the `boolean` case
         typeSwitch(true, {
             boolean: ({ value }) => {
                 expect(value).toBe(true);
@@ -64,7 +66,7 @@ describe('Type Switch Checking', () => {
             }
         });
 
-        // Checking for Function
+        // A function value routes to the `function` case (compared by identity)
         const func = () => {};
         typeSwitch(func, {
             function: ({ value }) => {
@@ -74,7 +76,8 @@ describe('Type Switch Checking', () => {
     });
 
     test('Number route switching', () => {
-        // Number switching route
+        // The `number` helper reached from the `string` handler re-dispatches 5 into
+        // the `number` case, which returns it
         expect(
             typeSwitch('string', {
                 number: ({ value }) => value,
@@ -82,7 +85,8 @@ describe('Type Switch Checking', () => {
             })
         ).toBe(5);
 
-        // Route using the full nested callback name
+        // A repeat of the case above: the nested helper is always named by its declared
+        // case key, so there is no separate short-form spelling to contrast with.
         expect(
             typeSwitch('string', {
                 number: ({ value }) => value,
@@ -91,9 +95,9 @@ describe('Type Switch Checking', () => {
         ).toBe(5);
     });
 
-    // Switching Routs
+    // Switching routes
     test('Boolean route switching', () => {
-        // Boolean route switching
+        // The `boolean` helper re-dispatches `true` into the `boolean` case
         expect(
             typeSwitch('string', {
                 boolean: ({ value }) => value,
@@ -101,7 +105,7 @@ describe('Type Switch Checking', () => {
             })
         ).toBe(true);
 
-        // Boolean route switching using the full nested callback name
+        // Same route, opposite literal: the helper forwards `false` instead of `true`
         expect(
             typeSwitch('string', {
                 boolean: ({ value }) => value,
@@ -306,12 +310,12 @@ describe('Type Switch Checking', () => {
 });
 
 /**
- * Perf-wave contract pins for the reworked dispatcher (T-A).
+ * Perf-wave contract pins for the reworked dispatcher.
  *
  * The args object is still built EAGERLY - one closure per own enumerable case key,
  * `value` inserted first - so its shape is byte-identical to the pre-optimisation
- * build (verified against the git HEAD implementation by a 480-check fingerprint
- * parity run, plus the cumulative mutation probes in Temp/coding-dispatch). The
+ * build (verified against the previous implementation by a 480-check fingerprint
+ * parity run, plus the cumulative mutation probes from that same verification). The
  * lazy `Object.defineProperty` and lazy `Proxy` args variants both measured
  * slower (0.63x and 0.07x-0.12x on the nested / spread paths) and are gone, which
  * is what the shape assertions below lock in.
